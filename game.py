@@ -6,6 +6,11 @@ HEIGHT = 500
 LEFT = int(0.1 * WIDTH)
 TOP = int(0.9 * HEIGHT)
 
+class Color:
+    BLACK = (0,) * 3
+    WHITE = (255,) * 3
+
+
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
