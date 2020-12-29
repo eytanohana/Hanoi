@@ -6,6 +6,9 @@ HEIGHT = 500
 LEFT = int(0.1 * WIDTH)
 TOP = int(0.9 * HEIGHT)
 
+BOTTOM_BOARD_DIMS = LEFT, TOP, WIDTH - 2 * LEFT, 20
+
+
 class Color:
     BLACK = (0,) * 3
     WHITE = (255,) * 3
@@ -20,7 +23,14 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
 
-        screen.fill('#ffffff')
-        pygame.draw.rect(screen, (0, 0, 0),
-                         pygame.Rect(LEFT, TOP, WIDTH - 2 * LEFT, 20))
+        screen.fill(Color.WHITE)
+        # base board
+        pygame.draw.rect(screen, Color.BLACK,
+                         pygame.Rect(*BOTTOM_BOARD_DIMS))
+
+        # pegs
+        for i in range(1, 4):
+            pos = i * (WIDTH - 2 * LEFT) // 3
+            pygame.draw.rect(screen, Color.BLACK,
+                             pygame.Rect(pos, HEIGHT//2, 5, TOP-250))
         pygame.display.flip()
