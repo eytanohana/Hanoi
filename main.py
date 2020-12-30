@@ -1,3 +1,4 @@
+import sys
 
 def hanoi(discs=3):
     def _hanoi(disc, from_, to, via):
@@ -14,5 +15,5 @@ def hanoi(discs=3):
 
 
 if __name__ == '__main__':
-    for move in hanoi(3):
+    for move in hanoi(int(sys.argv[1])):
         pass
