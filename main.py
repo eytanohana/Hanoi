@@ -1,4 +1,5 @@
 import sys
+import time
 
 def hanoi(discs):
     def _hanoi(disc, from_, to, via):
@@ -15,5 +16,8 @@ def hanoi(discs):
 if __name__ == '__main__':
     discs = int(sys.argv[1])
     with  open(f'hanoi-outputs/{discs}-discs.txt', 'w') as f:
+        start = time.time()
         for i, (disc, from_, to) in enumerate(hanoi(discs), 1):
             f.write(f'{i:03} Move disc {disc:2} from {from_} to {to}.\n')
+        end = time.time()
+    print(f'Problem took {end - start:.2f} seconds to solve for {discs} discs.')
