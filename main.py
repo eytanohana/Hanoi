@@ -1,6 +1,6 @@
 import sys
 
-def hanoi(discs=3):
+def hanoi(discs):
     def _hanoi(disc, from_, to, via):
         if disc <= 1:
             print(f'Move disc {disc} from {from_} to {to}.')
