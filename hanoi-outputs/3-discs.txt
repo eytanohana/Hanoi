@@ -1,0 +1,7 @@
+001 Move disc  1 from 1 to 3.
+002 Move disc  2 from 1 to 2.
+003 Move disc  1 from 3 to 2.
+004 Move disc  3 from 1 to 3.
+005 Move disc  1 from 2 to 1.
+006 Move disc  2 from 2 to 3.
+007 Move disc  1 from 1 to 3.
