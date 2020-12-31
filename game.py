@@ -18,6 +18,7 @@ class Color:
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    board = pygame.Rect(*BOARD_DIMS)
     running = True
     while running:
         for event in pygame.event.get():
@@ -26,12 +27,11 @@ if __name__ == '__main__':
 
         screen.fill(Color.WHITE)
         # base board
-        pygame.draw.rect(screen, Color.BLACK,
-                         pygame.Rect(*BOARD_DIMS))
+        pygame.draw.rect(screen, Color.BLACK, board)
 
         # pegs
-        for i in range(1, 4):
-            pos = i * (WIDTH - 2 * BOARD_POS_LEFT) // 3
-            pygame.draw.rect(screen, Color.BLACK,
-                             pygame.Rect(pos, HEIGHT // 2, 5, BOARD_POS_TOP - 250))
+        pegs = [pygame.Rect(i * WIDTH // 4, HEIGHT // 2, 5, BOARD_POS_TOP - 250)
+                for i in range(1, 4)]
+        for peg in pegs:
+            pygame.draw.rect(screen, Color.BLACK, peg)
         pygame.display.flip()
