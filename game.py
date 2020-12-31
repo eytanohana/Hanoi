@@ -3,10 +3,11 @@ import pygame
 WIDTH = 800
 HEIGHT = 500
 
-LEFT = int(0.1 * WIDTH)
-TOP = int(0.9 * HEIGHT)
-
-BOTTOM_BOARD_DIMS = LEFT, TOP, WIDTH - 2 * LEFT, 20
+BOARD_POS_LEFT = int(0.1 * WIDTH)
+BOARD_POS_TOP = int(0.9 * HEIGHT)
+BOARD_WIDTH = WIDTH - 2 * BOARD_POS_LEFT
+BOARD_HEIGHT = int(0.02 * HEIGHT)
+BOARD_DIMS = BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT
 
 
 class Color:
@@ -26,11 +27,11 @@ if __name__ == '__main__':
         screen.fill(Color.WHITE)
         # base board
         pygame.draw.rect(screen, Color.BLACK,
-                         pygame.Rect(*BOTTOM_BOARD_DIMS))
+                         pygame.Rect(*BOARD_DIMS))
 
         # pegs
         for i in range(1, 4):
-            pos = i * (WIDTH - 2 * LEFT) // 3
+            pos = i * (WIDTH - 2 * BOARD_POS_LEFT) // 3
             pygame.draw.rect(screen, Color.BLACK,
-                             pygame.Rect(pos, HEIGHT//2, 5, TOP-250))
+                             pygame.Rect(pos, HEIGHT // 2, 5, BOARD_POS_TOP - 250))
         pygame.display.flip()
