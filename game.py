@@ -21,6 +21,12 @@ class Color:
     PURPLE = (153, 13, 191)
 
 
+def display_pegs():
+    for peg in pegs:
+        print(f'{peg.midtop}')
+        pygame.draw.rect(screen, Color.BLACK, peg)
+
+
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -32,14 +38,9 @@ if __name__ == '__main__':
                 running = False
 
         screen.fill(Color.WHITE)
-        # base board
         pygame.draw.rect(screen, Color.BLACK, board)
-
-        # pegs
-        pegs = [pygame.Rect(i * WIDTH // 4, HEIGHT // 2, 5, board.top - HEIGHT//2)
+        pegs = [pygame.Rect(i * WIDTH // 4, HEIGHT // 2, 5, board.top - HEIGHT // 2)
                 for i in range(1, 4)]
-        for peg in pegs:
-            print(f'{peg.midtop}')
-            pygame.draw.rect(screen, Color.BLACK, peg)
-        pygame.display.flip()
+        display_pegs()
 
+        pygame.display.flip()
