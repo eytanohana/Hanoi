@@ -26,19 +26,6 @@ def display_pegs():
         pygame.draw.rect(screen, Color.BLACK, peg)
 
 
-def reset_globals(width, height):
-    global WIDTH, HEIGHT, BOARD_POS_LEFT, BOARD_POS_TOP, \
-        BOARD_WIDTH, BOARD_HEIGHT, BOARD_DIMS
-    WIDTH = width
-    HEIGHT = height
-
-    BOARD_POS_LEFT = int(0.1 * WIDTH)
-    BOARD_POS_TOP = int(0.9 * HEIGHT)
-    BOARD_WIDTH = WIDTH - 2 * BOARD_POS_LEFT
-    BOARD_HEIGHT = int(0.02 * HEIGHT)
-    BOARD_DIMS = BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT
-
-
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
@@ -48,14 +35,16 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.VIDEORESIZE:
-                reset_globals(event.w, event.h)
-                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
         screen.fill(Color.WHITE)
+        # base board
         pygame.draw.rect(screen, Color.BLACK, board)
-        pegs = [pygame.Rect(i * WIDTH // 4, HEIGHT // 2, 5, board.top - HEIGHT // 2)
-                for i in range(1, 4)]
-        display_pegs()
 
+        # pegs
+        pegs = [pygame.Rect(i * WIDTH // 4, HEIGHT // 2, 5, board.top - HEIGHT//2)
+                for i in range(1, 4)]
+        for peg in pegs:
+            print(f'{peg.midtop}')
+            pygame.draw.rect(screen, Color.BLACK, peg)
         pygame.display.flip()
+
