@@ -27,8 +27,20 @@ class Color:
 
 def display_pegs():
     for peg in pegs:
-        print(f'{peg.midtop}')
         pygame.draw.rect(screen, Color.BLACK, peg)
+
+def start_round(n_discs=3):
+    disc = pygame.Rect(pegs[0].centerx, board.top - 20, 120, 10)
+    disc.centerx = pegs[0].centerx
+    disc.bottom = board.top
+    discs.append(disc)
+    pygame.draw.rect(screen, Color.RED, disc)
+    for i in range(n_discs-1, 0, -1):
+        print(i, discs[n_discs-i-1])
+        disc = pygame.Rect(discs[-1].left + 5, discs[-1].top-10, discs[-1].width-5*(i+1), 10)
+        disc.centerx = discs[-1].centerx
+        pygame.draw.rect(screen, random.choice(Color.COLORS), disc)
+        discs.append(disc)
 
 
 if __name__ == '__main__':
@@ -37,6 +49,7 @@ if __name__ == '__main__':
     board = pygame.Rect(*BOARD_DIMS)
     running = True
     while running:
+        print('running')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -46,5 +59,8 @@ if __name__ == '__main__':
         pegs = [pygame.Rect(i * WIDTH // 4, HEIGHT // 2, 5, board.top - HEIGHT // 2)
                 for i in range(1, 4)]
         display_pegs()
+        discs = []
+        start_round()
 
         pygame.display.flip()
+        time.sleep(3)
