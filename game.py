@@ -1,4 +1,6 @@
 import pygame
+import time
+import random
 
 WIDTH = 800
 HEIGHT = 500
@@ -20,6 +22,8 @@ class Color:
     BLUE = (19, 150, 194)
     PURPLE = (153, 13, 191)
 
+    COLORS = [BLACK, WHITE, RED, ORANGE, YELLOW,
+              GREEN, BLUE, PURPLE]
 
 def display_pegs():
     for peg in pegs:
