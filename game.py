@@ -40,29 +40,20 @@ def init_discs(n_discs):
     discs = []
     for i in range(n_discs, 0, -1):
         disc = pygame.Rect(0, 0, 0, 0)
-        disc.width, disc.height = 120, 10
+        discs.append(disc)
+        disc.width = 120 if i == n_discs else discs[-2].width * 0.9
+        disc.height = 10
         disc.centerx = pegs[0].centerx
-        disc.bottom = board.top if i == n_discs \
-            else discs[-1].top
+        disc.bottom = board.top if i == n_discs else discs[-2].top
+        print(disc.bottom)
         pygame.draw.rect(screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
+        pygame.display.flip()
+    return discs
 
 
 def start_round(n_discs=3):
-    disc = pygame.Rect(0, 0, 0, 0)
-    disc.width = 120
-    disc.height = 10
-    disc.centerx = pegs[0].centerx
-    disc.bottom = board.top
-    discs.append(disc)
-    pygame.draw.rect(screen, Color.RED, disc)
-    for i in range(n_discs - 1, 0, -1):
-        print(i, discs[n_discs - i - 1])
-        disc = pygame.Rect(0, 0, 0, discs[-1].height)
-        disc.width = discs[-1].width * 0.9
-        disc.centerx = discs[-1].centerx
-        disc.bottom = discs[-1].top
-        pygame.draw.rect(screen, random.choice(Color.DISC_COLORS), disc)
-        discs.append(disc)
+    discs = init_discs(n_discs)
+    return pegs, discs
 
 
 if __name__ == '__main__':
@@ -81,7 +72,6 @@ if __name__ == '__main__':
         pegs = [pygame.Rect(i * WIDTH // 4, PEG_HEIGHT, 5, board.top - PEG_HEIGHT)
                 for i in range(1, 4)]
         display_pegs()
-        discs = []
         start_round(10)
 
         pygame.display.flip()
