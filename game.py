@@ -69,7 +69,7 @@ def refresh():
 
 def move_disc(from_peg, to_peg):
     disc = peg_stacks[from_peg].pop()
-    for y in range(disc.centery, HEIGHT//4, -1):
+    for y in range(disc.centery, HEIGHT//3, -1):
         disc.centery = y
         refresh()
     to_x = pegs[to_peg-1].centerx
@@ -120,5 +120,7 @@ if __name__ == '__main__':
         for i, (disc, from_, to) in enumerate(hanoi(n_discs), 1):
             print(f'{i:03} Move disc {disc:2} from {from_} to {to}.')
             move_disc(from_, to)
-            time.sleep(0.2)
+
+        print(f'{n_discs} discs solved in {i} moves.')
         running = False
+        time.sleep(5)
