@@ -36,6 +36,16 @@ def display_pegs():
     for peg in pegs:
         pygame.draw.rect(screen, Color.BLACK, peg)
 
+def init_discs(n_discs):
+    discs = []
+    for i in range(n_discs, 0, -1):
+        disc = pygame.Rect(0, 0, 0, 0)
+        disc.width, disc.height = 120, 10
+        disc.centerx = pegs[0].centerx
+        disc.bottom = board.top if i == n_discs \
+            else discs[-1].top
+        pygame.draw.rect(screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
+
 
 def start_round(n_discs=3):
     disc = pygame.Rect(0, 0, 0, 0)
