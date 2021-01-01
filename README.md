@@ -7,3 +7,4 @@ The game starts with the discs stacked from largest to smallest on the first peg
 1. You can only move the top disc of a stack to any other stack or empty peg.
 1. You can't place a larger disc on top of a smaller one. 
 
+![](static/hanoi.gif)
