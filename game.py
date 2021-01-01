@@ -67,6 +67,29 @@ def refresh():
     pygame.display.flip()
 
 
+def move_disc(from_peg, to_peg):
+    disc = peg_stacks[from_peg].pop()
+    for y in range(disc.centery, HEIGHT//4, -1):
+        disc.centery = y
+        refresh()
+    to_x = pegs[to_peg-1].centerx
+    step = 1 if to_x > disc.centerx else -1
+    for x in range(disc.centerx, pegs[to_peg-1].centerx-1, step):
+        disc.centerx = x
+        refresh()
+
+    try:
+        top_disk = peg_stacks[to_peg][-1]
+        to_y = top_disk.top
+    except IndexError:
+        to_y = board.top
+    for y in range(disc.bottom, to_y+1):
+        disc.bottom = y
+        refresh()
+
+    peg_stacks[to_peg].append(disc)
+
+
 if __name__ == '__main__':
     try:
         n_discs = int(sys.argv[1])
@@ -94,3 +117,4 @@ if __name__ == '__main__':
 
         refresh()
         time.sleep(2)
+        move_disc(1, 2)
