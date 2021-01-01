@@ -1,9 +1,9 @@
 import pygame
 import time
-import random
+import sys
 
-WIDTH = 800
-HEIGHT = 500
+WIDTH = 600
+HEIGHT = 400
 
 BOARD_POS_LEFT = int(0.1 * WIDTH)
 BOARD_POS_TOP = int(0.9 * HEIGHT)
@@ -11,7 +11,7 @@ BOARD_WIDTH = WIDTH - 2 * BOARD_POS_LEFT
 BOARD_HEIGHT = int(0.02 * HEIGHT)
 BOARD_DIMS = BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT
 
-PEG_HEIGHT = HEIGHT // 1.5
+PEG_HEIGHT = HEIGHT // 2
 
 
 class Color:
@@ -32,11 +32,15 @@ class Color:
                    GREY, BURNT_ORANGE, LIGHT_BLUE, LIGHT_PURPLE]
 
 
-def display_pegs():
-    for peg in pegs:
-        pygame.draw.rect(screen, Color.BLACK, peg)
+def init_pegs():
+    pegs = []
+    for i in range(1, 4):
+        pegs.append(pygame.Rect(i * WIDTH // 4, PEG_HEIGHT, 5, board.top - PEG_HEIGHT))
+        pygame.draw.rect(screen, Color.BLACK, pegs[-1])
+    return pegs
 
-def init_discs(n_discs):
+
+def init_discs(n_discs, pegs):
     discs = []
     for i in range(n_discs, 0, -1):
         disc = pygame.Rect(0, 0, 0, 0)
@@ -51,12 +55,22 @@ def init_discs(n_discs):
     return discs
 
 
-def start_round(n_discs=3):
-    discs = init_discs(n_discs)
+def start_round(n_discs):
+    pegs = init_pegs()
+    discs = init_discs(n_discs, pegs)
+    pygame.display.flip()
     return pegs, discs
 
 
 if __name__ == '__main__':
+    try:
+        n_discs = int(sys.argv[1])
+        if n_discs < 1:
+            n_discs = 3
+        if n_discs > 15:
+            n_discs = 15
+    except IndexError:
+        n_discs = 3
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     board = pygame.Rect(*BOARD_DIMS)
@@ -69,10 +83,5 @@ if __name__ == '__main__':
 
         screen.fill(Color.WHITE)
         pygame.draw.rect(screen, Color.BLACK, board)
-        pegs = [pygame.Rect(i * WIDTH // 4, PEG_HEIGHT, 5, board.top - PEG_HEIGHT)
-                for i in range(1, 4)]
-        display_pegs()
-        start_round(10)
-
-        pygame.display.flip()
-        time.sleep(3)
+        start_round(n_discs)
+        time.sleep(2)
