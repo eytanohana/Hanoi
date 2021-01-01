@@ -1,5 +1,5 @@
 from collections import defaultdict
-from main import hanoi
+from hanoi import hanoi
 import time
 import sys
 import pygame
