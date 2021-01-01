@@ -11,23 +11,31 @@ BOARD_WIDTH = WIDTH - 2 * BOARD_POS_LEFT
 BOARD_HEIGHT = int(0.02 * HEIGHT)
 BOARD_DIMS = BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT
 
+PEG_HEIGHT = HEIGHT // 1.5
+
 
 class Color:
     BLACK = (0,) * 3
     WHITE = (255,) * 3
+    GREY = (143, 143, 143)
     RED = (168, 50, 50)
     ORANGE = (207, 138, 21)
+    BURNT_ORANGE = (255, 132, 0)
     YELLOW = (201, 193, 26)
     GREEN = (70, 189, 19)
     BLUE = (19, 150, 194)
+    LIGHT_BLUE = (42, 191, 250)
     PURPLE = (153, 13, 191)
+    LIGHT_PURPLE = (207, 99, 190)
 
-    COLORS = [BLACK, WHITE, RED, ORANGE, YELLOW,
-              GREEN, BLUE, PURPLE]
+    DISC_COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE,
+                   GREY, BURNT_ORANGE, LIGHT_BLUE, LIGHT_PURPLE]
+
 
 def display_pegs():
     for peg in pegs:
         pygame.draw.rect(screen, Color.BLACK, peg)
+
 
 def start_round(n_discs=3):
     disc = pygame.Rect(pegs[0].centerx, board.top - 20, 120, 10)
