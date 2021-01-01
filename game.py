@@ -1,7 +1,7 @@
 from collections import defaultdict
+from main import hanoi
 import time
 import sys
-
 import pygame
 
 
@@ -74,7 +74,7 @@ def move_disc(from_peg, to_peg):
         refresh()
     to_x = pegs[to_peg-1].centerx
     step = 1 if to_x > disc.centerx else -1
-    for x in range(disc.centerx, pegs[to_peg-1].centerx-1, step):
+    for x in range(disc.centerx, pegs[to_peg-1].centerx+step, step):
         disc.centerx = x
         refresh()
 
@@ -117,4 +117,8 @@ if __name__ == '__main__':
 
         refresh()
         time.sleep(2)
-        move_disc(1, 2)
+        for i, (disc, from_, to) in enumerate(hanoi(n_discs), 1):
+            print(f'{i:03} Move disc {disc:2} from {from_} to {to}.')
+            move_disc(from_, to)
+            time.sleep(0.2)
+        running = False
