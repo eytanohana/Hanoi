@@ -1,6 +1,9 @@
-import pygame
+from collections import defaultdict
 import time
 import sys
+
+import pygame
+
 
 WIDTH = 600
 HEIGHT = 400
@@ -31,16 +34,18 @@ class Color:
     DISC_COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE,
                    GREY, BURNT_ORANGE, LIGHT_BLUE, LIGHT_PURPLE]
 
+def init_board():
+    board = pygame.Rect(*BOARD_DIMS)
+    return board
 
 def init_pegs():
     pegs = []
     for i in range(1, 4):
         pegs.append(pygame.Rect(i * WIDTH // 4, PEG_HEIGHT, 5, board.top - PEG_HEIGHT))
-        pygame.draw.rect(screen, Color.BLACK, pegs[-1])
     return pegs
 
 
-def init_discs(n_discs, pegs):
+def init_discs(n_discs):
     discs = []
     for i in range(n_discs, 0, -1):
         disc = pygame.Rect(0, 0, 0, 0)
@@ -49,17 +54,17 @@ def init_discs(n_discs, pegs):
         disc.height = 10
         disc.centerx = pegs[0].centerx
         disc.bottom = board.top if i == n_discs else discs[-2].top
-        print(disc.bottom)
-        pygame.draw.rect(screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
-        pygame.display.flip()
     return discs
 
 
-def start_round(n_discs):
-    pegs = init_pegs()
-    discs = init_discs(n_discs, pegs)
+def refresh():
+    screen.fill(Color.WHITE)
+    pygame.draw.rect(screen, Color.BLACK, board)
+    for peg in pegs:
+        pygame.draw.rect(screen, Color.BLACK, peg)
+    for i, disc in enumerate(discs):
+        pygame.draw.rect(screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
     pygame.display.flip()
-    return pegs, discs
 
 
 if __name__ == '__main__':
@@ -71,17 +76,21 @@ if __name__ == '__main__':
             n_discs = 15
     except IndexError:
         n_discs = 3
+
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    board = pygame.Rect(*BOARD_DIMS)
+    board = init_board()
+    pegs = init_pegs()
+    discs = init_discs(n_discs)
+
+    peg_stacks = defaultdict(list)
+    peg_stacks[1].extend(discs)
+
     running = True
     while running:
-        print('running')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        screen.fill(Color.WHITE)
-        pygame.draw.rect(screen, Color.BLACK, board)
-        start_round(n_discs)
+        refresh()
         time.sleep(2)
