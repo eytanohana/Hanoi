@@ -8,3 +8,5 @@ The game starts with the discs stacked from largest to smallest on the first peg
 1. You can't place a larger disc on top of a smaller one. 
 
 ![](static/hanoi.gif)
+
+The game quickly increases in difficulty as the number of discs used to play grows. In fact, the game can be played with an arbitrary amount of discs.
