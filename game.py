@@ -95,8 +95,10 @@ if __name__ == '__main__':
         n_discs = int(sys.argv[1])
         if n_discs < 1:
             n_discs = 3
+            print(f'Invalid number of disks. Using {n_discs} disks instead.')
         if n_discs > 15:
             n_discs = 15
+            print(f'Invalid number of disks. Using {n_discs} disks instead.')
     except IndexError:
         n_discs = 3
 
