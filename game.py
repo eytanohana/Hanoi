@@ -102,6 +102,7 @@ if __name__ == '__main__':
     except IndexError:
         n_discs = 3
 
+    print_spaces = len(str(2 ** n_discs - 1))
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     board = init_board()
@@ -120,9 +121,9 @@ if __name__ == '__main__':
         refresh()
         time.sleep(2)
         for i, (disc, from_, to) in enumerate(hanoi(n_discs), 1):
-            print(f'{i:03} Move disc {disc:2} from {from_} to {to}.')
+            print(f'{i:{print_spaces}} Move disc {disc:2} from {from_} to {to}.')
             move_disc(from_, to)
-
+        print()
         print(f'{n_discs} discs solved in {i} moves.')
         running = False
         time.sleep(5)
