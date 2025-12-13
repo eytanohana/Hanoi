@@ -65,10 +65,10 @@ uv run game.py [n_disks] [--speed SPEED]
 
 ### Arguments
 
-  Argument    Description                                Default
-  ----------- ------------------------------------------ ---------
-  `n_disks`   Number of disks (1--10)                    `3`
-  `--speed`   Pixels moved per frame (animation speed)   `15`
+| Argument  | Description                                     | Default |
+|-----------|-------------------------------------------------|---------|
+| `n_disks` | Number of disks (1–10)                          | `3`     |
+| `--speed` | Pixels moved per frame (animation speed, >= 10) | `15`    |
 
 ### Examples
 
