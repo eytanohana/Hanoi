@@ -117,14 +117,14 @@ class Game:
                         # Resuming from pause - exit step mode to allow continuous running
                         self.step_once = False
                     self._update_caption()
-                if event.key == pygame.K_RIGHT:
+                if event.key in (pygame.K_RIGHT, pygame.K_n):
                     self.step_once = True
                     if self.paused:
                         self.paused = False
                     self._update_caption()
                 if event.key == pygame.K_r:
                     self.restart_requested = True
-    
+
     def _update_caption(self):
         caption = 'Towers of Hanoi'
         if self.step_once:
@@ -142,21 +142,23 @@ class Game:
         self.refresh()
         move_iterator = enumerate(hanoi(self.settings.n_disks), 1)
         i = 0
-        
+
         while True:
             self.handle_events()
-            
+
             # If paused, wait (unless step_once is triggered, which will unpause)
             if self.paused and not self.step_once:
                 self.refresh()
                 continue
-            
+
             # Execute next move
             try:
                 i, (disc, from_, to) = next(move_iterator)
-                console.print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
+                console.print(
+                    f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.'
+                )
                 self.move_disc(from_, to)
-                
+
                 # If in step mode, pause after completing the move
                 if self.step_once:
                     self._update_caption()
