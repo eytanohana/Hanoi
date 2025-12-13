@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import time
 from collections.abc import Iterator
+from typing import Tuple
 
-Move = tuple[int, int, int]
+Move = Tuple[int, int, int]
 
 
 def hanoi(discs: int) -> Iterator[Move]:
