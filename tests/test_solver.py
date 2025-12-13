@@ -6,7 +6,7 @@ from hanoi.solver import hanoi
 def test_move_count():
     for n in range(1, 9):
         moves = list(hanoi(n))
-        assert len(moves) == 2 ** n - 1
+        assert len(moves) == 2**n - 1
 
 
 def test_moves_are_legal_and_solve():

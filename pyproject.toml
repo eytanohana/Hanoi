@@ -24,6 +24,7 @@ line-length = 120
 
 [tool.ruff.format]
 quote-style = "single"
+indent-style = "space"
 
 [tool.ruff.lint]
 extend-select = [
@@ -36,4 +37,11 @@ extend-select = [
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
+    "ruff>=0.14.9",
 ]
+
+
+# ---- Pytest configuration ----
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
