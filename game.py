@@ -3,27 +3,38 @@ from __future__ import annotations
 import argparse
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Final
 
 import pygame
 
 from hanoi import hanoi
 
-FPS = 60
+# -----------------------------
+# Constants
+# -----------------------------
+FPS: Final[int] = 60
 
-WIDTH = 600
-HEIGHT = 400
+WIDTH: Final[int] = 600
+HEIGHT: Final[int] = 400
 
-BOARD_POS_LEFT = int(0.1 * WIDTH)
-BOARD_POS_TOP = int(0.9 * HEIGHT)
-BOARD_WIDTH = WIDTH - 2 * BOARD_POS_LEFT
-BOARD_HEIGHT = int(0.02 * HEIGHT)
-BOARD_DIMS = BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT
 
-PEG_HEIGHT = HEIGHT // 2
+BOARD_POS_LEFT: Final[int] = int(0.1 * WIDTH)
+BOARD_POS_TOP: Final[int] = int(0.9 * HEIGHT)
+BOARD_WIDTH: Final[int] = WIDTH - 2 * BOARD_POS_LEFT
+BOARD_HEIGHT: Final[int] = int(0.02 * HEIGHT)
+
+
+PEG_HEIGHT: Final[int] = HEIGHT // 2
+PEG_WIDTH: Final[int] = 6
+
+DISC_HEIGHT: Final[int] = 10
+DISC_WIDTH: Final[int] = 120
+
+LIFT_Y: Final[int] = HEIGHT // 3
 
 
 class QuitGame(Exception):
-    pass
+    """Raised to stop the game loop cleanly when the window is closed."""
 
 
 class Color:
@@ -67,7 +78,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption('Towers of Hanoi')
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        self.board = pygame.Rect(*BOARD_DIMS)
+        self.board = pygame.Rect(BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT)
         self.pegs = self.init_pegs()
         self.disks = self.init_discs(self.settings.n_disks)
 
@@ -80,18 +91,17 @@ class Game:
 
     def init_pegs(self) -> list[pygame.Rect]:
         return [
-            pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, 5, self.board.top - PEG_HEIGHT) for peg_num in range(1, 4)
+            pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, PEG_WIDTH, self.board.top - PEG_HEIGHT) for peg_num in range(1, 4)
         ]
 
     def init_discs(self, n_discs) -> list[pygame.Rect]:
         discs = []
         for i in range(n_discs, 0, -1):
-            disc = pygame.Rect(0, 0, 0, 0)
-            discs.append(disc)
-            disc.width = 120 if i == n_discs else discs[-2].width * 0.9
-            disc.height = 10
+            width = DISC_WIDTH if i == n_discs else discs[-1].width * 0.9
+            disc = pygame.Rect(0, 0, width, DISC_HEIGHT)
             disc.centerx = self.pegs[0].centerx
-            disc.bottom = self.board.top if i == n_discs else discs[-2].top
+            disc.bottom = self.board.top if i == n_discs else discs[-1].top
+            discs.append(disc)
         return discs
 
     @staticmethod
@@ -169,7 +179,7 @@ class Game:
 
     def move_disc(self, from_peg, to_peg):
         disc = self.peg_stacks[from_peg].pop()
-        self._animate_to(disc, y=HEIGHT // 3)
+        self._animate_to(disc, y=LIFT_Y)
 
         to_x = self.pegs[to_peg - 1].centerx
         self._animate_to(disc, x=to_x)
