@@ -1,6 +1,9 @@
 from __future__ import annotations
+
+import argparse
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 
 import pygame
 
@@ -19,8 +22,8 @@ PEG_HEIGHT = HEIGHT // 2
 
 
 class Color:
-    BLACK = (0,) * 3
-    WHITE = (255,) * 3
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
     GREY = (143, 143, 143)
     RED = (168, 50, 50)
     ORANGE = (207, 138, 21)
@@ -44,6 +47,14 @@ class Color:
         LIGHT_BLUE,
         LIGHT_PURPLE,
     ]
+
+
+@dataclass
+class Settings:
+    n_disks: int = 3
+    speed: int = 6  # movement speed
+    pause_after_solve_ms: int = 0
+
 
 
 def init_pegs() -> list[pygame.Rect]:
@@ -109,12 +120,30 @@ def get_number_of_disks():
     return n_disks
 
 
+def parse_args() -> Settings:
+    p = argparse.ArgumentParser(description="Animate Towers of Hanoi (pygame).")
+    p.add_argument("n_disks", nargs="?", type=int, default=3, help="number of disks (1..15)")
+    p.add_argument("--speed", type=int, default=15, help="pixels per frame (movement speed)")
+    args = p.parse_args()
+
+    n = args.n_disks
+    if n < 1:
+        n = 3
+        print("Invalid number of disks. Using 3 disks instead.")
+    if n > 10:
+        n = 10
+        print("Too many disks. Using 15 disks instead.")
+
+    return Settings(n_disks=n, speed=max(10, args.speed))
+
+
 if __name__ == "__main__":
     n_disks = get_number_of_disks()
     print_spaces = len(str(2**n_disks - 1))
     print_disk_spaces = len(str(n_disks))
 
     pygame.init()
+    pygame.display.set_caption("Towers of Hanoi")
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     board = pygame.Rect(*BOARD_DIMS)
     pegs = init_pegs()
