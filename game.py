@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from collections import defaultdict
 from dataclasses import dataclass
 
 import pygame
 
 from hanoi import hanoi
+
+FPS = 60
 
 WIDTH = 600
 HEIGHT = 400
@@ -59,56 +60,6 @@ class Settings:
     pause_after_solve_ms: int = 0
 
 
-
-
-
-def refresh():
-    screen.fill(Color.WHITE)
-    pygame.draw.rect(screen, Color.BLACK, board)
-    for peg in pegs:
-        pygame.draw.rect(screen, Color.BLACK, peg)
-    for i, disc in enumerate(discs):
-        pygame.draw.rect(screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
-    pygame.display.flip()
-
-
-def move_disc(from_peg, to_peg):
-    disc = peg_stacks[from_peg].pop()
-    for y in range(disc.centery, HEIGHT // 3, -1):
-        disc.centery = y
-        refresh()
-    to_x = pegs[to_peg - 1].centerx
-    step = 1 if to_x > disc.centerx else -1
-    for x in range(disc.centerx, pegs[to_peg - 1].centerx + step, step):
-        disc.centerx = x
-        refresh()
-
-    try:
-        top_disk = peg_stacks[to_peg][-1]
-        to_y = top_disk.top
-    except IndexError:
-        to_y = board.top
-    for y in range(disc.bottom, to_y + 1):
-        disc.bottom = y
-        refresh()
-
-    peg_stacks[to_peg].append(disc)
-
-
-def get_number_of_disks():
-    try:
-        n_disks = int(sys.argv[1])
-        if n_disks < 1:
-            n_disks = 3
-            print(f"Invalid number of disks. Using {n_disks} disks instead.")
-        if n_disks > 15:
-            n_disks = 15
-            print(f"Invalid number of disks. Using {n_disks} disks instead.")
-    except IndexError:
-        n_disks = 3
-    return n_disks
-
-
 class Game:
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -124,6 +75,7 @@ class Game:
 
         self.print_spaces = len(str(2 ** self.settings.n_disks - 1))
         self.print_disk_spaces = len(str(self.settings.n_disks))
+        self.clock = pygame.time.Clock()
 
     def init_pegs(self) -> list[pygame.Rect]:
         return [pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, 5, self.board.top - PEG_HEIGHT) for peg_num in range(1, 4)]
@@ -146,14 +98,51 @@ class Game:
                 raise QuitGame
 
     def run(self):
+        self.refresh()
         for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
             print(f"{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.")
-            move_disc(from_, to)
+            self.move_disc(from_, to)
         else:
             print(f"\n{self.settings.n_disks} discs solved in {i} moves.")
 
         while True:
             self.check_events()
+            self.clock.tick(60)
+
+    def refresh(self):
+        self.screen.fill(Color.WHITE)
+        pygame.draw.rect(self.screen, Color.BLACK, self.board)
+        for peg in self.pegs:
+            pygame.draw.rect(self.screen, Color.BLACK, peg)
+        for i, disc in enumerate(self.disks):
+            pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
+        pygame.display.flip()
+
+    def move_disc(self, from_peg, to_peg):
+        disc = self.peg_stacks[from_peg].pop()
+        for y in range(disc.centery, HEIGHT // 3, -1):
+            disc.centery = y
+            self.refresh()
+        self.clock.tick(FPS)
+
+        to_x = self.pegs[to_peg - 1].centerx
+        step = 1 if to_x > disc.centerx else -1
+        for x in range(disc.centerx, self.pegs[to_peg - 1].centerx + step, step):
+            disc.centerx = x
+            self.refresh()
+        self.clock.tick(FPS)
+
+        try:
+            top_disk = self.peg_stacks[to_peg][-1]
+            to_y = top_disk.top
+        except IndexError:
+            to_y = self.board.top
+        for y in range(disc.bottom, to_y + 1):
+            disc.bottom = y
+            self.refresh()
+        self.clock.tick(FPS)
+
+        self.peg_stacks[to_peg].append(disc)
 
 
 def parse_args() -> Settings:
@@ -173,7 +162,11 @@ def parse_args() -> Settings:
     return Settings(n_disks=n, speed=max(10, args.speed))
 
 
+def main():
+    settings = parse_args()
+    game = Game(settings)
+    game.run()
+
+
 if __name__ == "__main__":
-
-
-
+    main()
