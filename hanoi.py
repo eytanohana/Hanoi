@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 import sys
 import time
+from collections.abc import Iterator
+
+Move = tuple[int, int, int]
 
 
-def hanoi(discs):
-    def _hanoi(disc, from_, to, via):
-        if disc <= 1:
+def hanoi(discs: int) -> Iterator[Move]:
+    if discs < 1:
+        return iter(())
+
+    def _hanoi(disc: int, from_: int, to: int, via: int) -> Iterator[Move]:
+        if disc == 1:
             yield disc, from_, to
         else:
             yield from _hanoi(disc - 1, from_, via, to)
