@@ -115,6 +115,7 @@ if __name__ == "__main__":
         n_discs = 3
 
     print_spaces = len(str(2**n_discs - 1))
+    print_disk_spaces = len(str(n_discs))
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     board = init_board()
@@ -129,7 +130,7 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 break
 
-        print(f"{i:{print_spaces}} Move disc {disc:2} from {from_} to {to}.")
+        print(f"{i:{print_spaces}}: Move disc {disc:{print_disk_spaces}} from peg {from_} to {to}.")
         move_disc(from_, to)
     else:
         print(f"\n{n_discs} discs solved in {i} moves.")
