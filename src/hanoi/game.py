@@ -83,6 +83,7 @@ class Game:
         self.print_disk_spaces = len(str(self.settings.n_disks))
         self.clock = pygame.time.Clock()
 
+        self.finished = False
         self.paused = False
         self.step_once = False
         self.restart_requested = False
@@ -103,6 +104,27 @@ class Game:
             disc.bottom = self.board.top if i == n_discs else discs[-1].top
             discs.append(disc)
         return discs
+
+    def reset_game(self):
+        """Reset the game to its initial state."""
+        # Reset disc positions to peg 1
+        for i, disc in enumerate(self.disks):
+            disc.centerx = self.pegs[0].centerx
+            if i == 0:
+                disc.bottom = self.board.top
+            else:
+                disc.bottom = self.disks[i - 1].top
+
+        # Reset peg stacks
+        self.peg_stacks.clear()
+        self.peg_stacks[1].extend(self.disks)
+
+        # Reset game state
+        self.paused = False
+        self.step_once = False
+        self.restart_requested = False
+        self.finished = False
+        self._update_caption()
 
     def handle_events(self) -> None:
         for event in pygame.event.get():
@@ -127,51 +149,62 @@ class Game:
 
     def _update_caption(self):
         caption = 'Towers of Hanoi'
-        if self.step_once:
-            caption += '(Step)'
-        elif self.paused:
-            caption += ' (Paused)'
+        if not self.finished:
+            if self.step_once:
+                caption += '(Step)'
+            elif self.paused:
+                caption += ' (Paused)'
         pygame.display.set_caption(caption)
 
     def wait_if_paused(self):
-        while self.paused:
+        while self.paused and not self.restart_requested:
             self.handle_events()
             self.refresh()
 
     def run(self):
-        self.refresh()
-        move_iterator = enumerate(hanoi(self.settings.n_disks), 1)
-        i = 0
-
         while True:
-            self.handle_events()
-
-            # If paused, wait (unless step_once is triggered, which will unpause)
-            if self.paused and not self.step_once:
-                self.refresh()
-                continue
-
-            # Execute next move
-            try:
-                i, (disc, from_, to) = next(move_iterator)
-                console.print(
-                    f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.'
-                )
-                self.move_disc(from_, to)
-
-                # If in step mode, pause after completing the move
-                if self.step_once:
-                    self._update_caption()
-                    self.paused = True
-                    self.step_once = False
-            except StopIteration:
-                # All moves completed
-                console.print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
-                break
-
-        while True:
-            self.handle_events()
             self.refresh()
+            move_iterator = enumerate(hanoi(self.settings.n_disks), 1)
+            i = 0
+
+            while True:
+                self.handle_events()
+
+                # Check for restart request
+                if self.restart_requested:
+                    self.reset_game()
+                    break  # Break inner loop to restart
+
+                # If paused, wait (unless step_once is triggered, which will unpause)
+                if self.paused and not self.step_once:
+                    self.refresh()
+                    continue
+
+                # Execute next move
+                try:
+                    i, (disc, from_, to) = next(move_iterator)
+                    console.print(
+                        f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.'
+                    )
+                    self.move_disc(from_, to)
+
+                    # If in step mode, pause after completing the move
+                    if self.step_once:
+                        self._update_caption()
+                        self.paused = True
+                        self.step_once = False
+                except StopIteration:
+                    self.finished = True
+                    # All moves completed
+                    console.print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
+                    # Wait for restart or quit
+                    while True:
+                        self.handle_events()
+                        if self.restart_requested:
+                            self.reset_game()
+                            break  # Break to restart outer loop
+                        self.refresh()
+                    break  # Break inner loop to restart
 
     def refresh(self):
         self.screen.fill(Color.WHITE)
@@ -219,9 +252,11 @@ class Game:
         bottom: int | None = None,
     ):
         done = False
-        while not done:
+        while not done and not self.restart_requested:
             self.handle_events()
             self.wait_if_paused()
+            if self.restart_requested:
+                break
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
             self.refresh()
 
