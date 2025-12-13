@@ -98,16 +98,19 @@ class Game:
                 raise QuitGame
 
     def run(self):
-        self.refresh()
-        for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
-            print(f"{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.")
-            self.move_disc(from_, to)
-        else:
-            print(f"\n{self.settings.n_disks} discs solved in {i} moves.")
+        try:
+            self.refresh()
+            for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
+                print(f"{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.")
+                self.move_disc(from_, to)
+            else:
+                print(f"\n{self.settings.n_disks} discs solved in {i} moves.")
 
-        while True:
-            self.check_events()
-            self.clock.tick(60)
+            while True:
+                self.check_events()
+                self.refresh()
+        except QuitGame:
+            return
 
     def refresh(self):
         self.screen.fill(Color.WHITE)
@@ -117,31 +120,49 @@ class Game:
         for i, disc in enumerate(self.disks):
             pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
         pygame.display.flip()
+        self.clock.tick(FPS)
+
+    def _step_towards(self, rect: pygame.Rect, *, x: int | None = None, y: int | None = None, bottom: int | None = None):
+        speed = self.settings.speed
+
+        def approach(current: int, target: int):
+            if current == target or abs(target - current) <= speed:
+                return target, True
+            return (current + speed if target > current else current - speed), False
+
+        done = True
+        if x is not None:
+            rect.centerx, ok = approach(rect.centerx, x)
+            done &= ok
+        if y is not None:
+            rect.centery, ok = approach(rect.centery, y)
+            done &= ok
+        if bottom is not None:
+            rect.bottom, ok = approach(rect.bottom, bottom)
+            done &= ok
+        return done
+
+    def _animate_to(self, rect: pygame.Rect, *, x: int | None = None, y: int | None = None, bottom: int | None = None):
+        while True:
+            self.check_events()
+            done = self._step_towards(rect, x=x, y=y, bottom=bottom)
+            self.refresh()
+            if done:
+                return
 
     def move_disc(self, from_peg, to_peg):
         disc = self.peg_stacks[from_peg].pop()
-        for y in range(disc.centery, HEIGHT // 3, -1):
-            disc.centery = y
-            self.refresh()
-        self.clock.tick(FPS)
+        self._animate_to(disc, y=HEIGHT // 3)
 
         to_x = self.pegs[to_peg - 1].centerx
-        step = 1 if to_x > disc.centerx else -1
-        for x in range(disc.centerx, self.pegs[to_peg - 1].centerx + step, step):
-            disc.centerx = x
-            self.refresh()
-        self.clock.tick(FPS)
+        self._animate_to(disc, x=to_x)
 
         try:
             top_disk = self.peg_stacks[to_peg][-1]
             to_y = top_disk.top
         except IndexError:
             to_y = self.board.top
-        for y in range(disc.bottom, to_y + 1):
-            disc.bottom = y
-            self.refresh()
-        self.clock.tick(FPS)
-
+        self._animate_to(disc, bottom=to_y)
         self.peg_stacks[to_peg].append(disc)
 
 
