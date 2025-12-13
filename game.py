@@ -65,7 +65,7 @@ class Game:
     def __init__(self, settings: Settings):
         self.settings = settings
         pygame.init()
-        pygame.display.set_caption("Towers of Hanoi")
+        pygame.display.set_caption('Towers of Hanoi')
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.board = pygame.Rect(*BOARD_DIMS)
         self.pegs = self.init_pegs()
@@ -80,10 +80,7 @@ class Game:
 
     def init_pegs(self) -> list[pygame.Rect]:
         return [
-            pygame.Rect(
-                peg_num * WIDTH // 4, PEG_HEIGHT, 5, self.board.top - PEG_HEIGHT
-            )
-            for peg_num in range(1, 4)
+            pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, 5, self.board.top - PEG_HEIGHT) for peg_num in range(1, 4)
         ]
 
     def init_discs(self, n_discs) -> list[pygame.Rect]:
@@ -107,12 +104,10 @@ class Game:
         try:
             self.refresh()
             for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
-                print(
-                    f"{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}."
-                )
+                print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
                 self.move_disc(from_, to)
             else:
-                print(f"\n{self.settings.n_disks} discs solved in {i} moves.")
+                print(f'\n{self.settings.n_disks} discs solved in {i} moves.')
 
             while True:
                 self.check_events()
@@ -126,9 +121,7 @@ class Game:
         for peg in self.pegs:
             pygame.draw.rect(self.screen, Color.BLACK, peg)
         for i, disc in enumerate(self.disks):
-            pygame.draw.rect(
-                self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc
-            )
+            pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
         pygame.display.flip()
         self.clock.tick(FPS)
 
@@ -191,22 +184,18 @@ class Game:
 
 
 def parse_args() -> Settings:
-    p = argparse.ArgumentParser(description="Animate Towers of Hanoi (pygame).")
-    p.add_argument(
-        "n_disks", nargs="?", type=int, default=3, help="number of disks (1..15)"
-    )
-    p.add_argument(
-        "--speed", type=int, default=15, help="pixels per frame (movement speed)"
-    )
+    p = argparse.ArgumentParser(description='Animate Towers of Hanoi (pygame).')
+    p.add_argument('n_disks', nargs='?', type=int, default=3, help='number of disks (1..15)')
+    p.add_argument('--speed', type=int, default=15, help='pixels per frame (movement speed)')
     args = p.parse_args()
 
     n = args.n_disks
     if n < 1:
         n = 3
-        print("Invalid number of disks. Using 3 disks instead.")
+        print('Invalid number of disks. Using 3 disks instead.')
     if n > 10:
         n = 10
-        print("Too many disks. Using 15 disks instead.")
+        print('Too many disks. Using 15 disks instead.')
 
     return Settings(n_disks=n, speed=max(10, args.speed))
 
@@ -217,5 +206,5 @@ def main():
     game.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

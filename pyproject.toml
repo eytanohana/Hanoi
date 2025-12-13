@@ -7,3 +7,18 @@ requires-python = ">=3.8"
 dependencies = [
     "pygame>=2.6.1",
 ]
+
+# ---- Ruff configuration ----
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+extend-select = [
+    "B",   # flake8-bugbear: likely bugs / bad patterns
+    "I",   # isort: import sorting
+    "UP",  # pyupgrade: modernize syntax
+    "SIM", # flake8-simplify
+]
