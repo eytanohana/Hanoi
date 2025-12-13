@@ -71,7 +71,6 @@ class Game:
     def __init__(self, settings: Settings):
         self.settings = settings
         pygame.init()
-        pygame.display.set_caption('Towers of Hanoi')
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.board = pygame.Rect(BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT)
         self.pegs = self.init_pegs()
@@ -87,6 +86,7 @@ class Game:
         self.paused = False
         self.step_once = False
         self.restart_requested = False
+        self._update_caption()
 
     def init_pegs(self) -> list[pygame.Rect]:
         return [
@@ -113,11 +113,25 @@ class Game:
                     raise QuitGame
                 if event.key in (pygame.K_SPACE, pygame.K_p):
                     self.paused = not self.paused
-                    pygame.display.set_caption('Towers of Hanoi' + (' (Paused)' if self.paused else ''))
+                    if not self.paused:
+                        # Resuming from pause - exit step mode to allow continuous running
+                        self.step_once = False
+                    self._update_caption()
                 if event.key == pygame.K_RIGHT:
                     self.step_once = True
+                    if self.paused:
+                        self.paused = False
+                    self._update_caption()
                 if event.key == pygame.K_r:
                     self.restart_requested = True
+    
+    def _update_caption(self):
+        caption = 'Towers of Hanoi'
+        if self.step_once:
+            caption += '(Step)'
+        elif self.paused:
+            caption += ' (Paused)'
+        pygame.display.set_caption(caption)
 
     def wait_if_paused(self):
         while self.paused:
@@ -126,13 +140,32 @@ class Game:
 
     def run(self):
         self.refresh()
-        for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
+        move_iterator = enumerate(hanoi(self.settings.n_disks), 1)
+        i = 0
+        
+        while True:
             self.handle_events()
-            self.wait_if_paused()
-            console.print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
-            self.move_disc(from_, to)
-        else:
-            console.print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
+            
+            # If paused, wait (unless step_once is triggered, which will unpause)
+            if self.paused and not self.step_once:
+                self.refresh()
+                continue
+            
+            # Execute next move
+            try:
+                i, (disc, from_, to) = next(move_iterator)
+                console.print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
+                self.move_disc(from_, to)
+                
+                # If in step mode, pause after completing the move
+                if self.step_once:
+                    self._update_caption()
+                    self.paused = True
+                    self.step_once = False
+            except StopIteration:
+                # All moves completed
+                console.print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
+                break
 
         while True:
             self.handle_events()
