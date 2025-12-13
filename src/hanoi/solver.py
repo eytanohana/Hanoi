@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import time
 from collections.abc import Iterator
 
@@ -23,11 +22,12 @@ def hanoi(discs: int) -> Iterator[Move]:
 
 
 if __name__ == '__main__':
-    discs = int(sys.argv[1])
-    with open(f'hanoi-outputs/{discs}-discs.txt', 'w') as f:
-        start = time.time()
-        for i, (disc, from_, to) in enumerate(hanoi(discs), 1):
-            # print(f'{i:03} Move disc {disc:2} from {from_} to {to}.')
-            f.write(f'{i:03} Move disc {disc:2} from {from_} to {to}.\n')
-        end = time.time()
-    print(f'{discs} discs took {end - start:.2f} seconds to solve.')
+    discs = 9
+    start = time.perf_counter()
+
+    for i, (disc, from_, to) in enumerate(hanoi(discs), 1):
+        print(f'{i:,}: Move disc {disc} from peg {from_} to {to}.')
+
+    end = time.perf_counter()
+
+    print(f'\n{discs} discs took {end - start:.2f} seconds to solve.')
