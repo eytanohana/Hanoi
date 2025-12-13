@@ -20,6 +20,9 @@ BOARD_DIMS = BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT
 
 PEG_HEIGHT = HEIGHT // 2
 
+class QuitGame(Exception):
+    pass
+
 
 class Color:
     BLACK = (0, 0, 0)
@@ -57,20 +60,6 @@ class Settings:
 
 
 
-def init_pegs() -> list[pygame.Rect]:
-    return [pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, 5, board.top - PEG_HEIGHT) for peg_num in range(1, 4)]
-
-
-def init_discs(n_discs) -> list[pygame.Rect]:
-    discs = []
-    for i in range(n_discs, 0, -1):
-        disc = pygame.Rect(0, 0, 0, 0)
-        discs.append(disc)
-        disc.width = 120 if i == n_discs else discs[-2].width * 0.9
-        disc.height = 10
-        disc.centerx = pegs[0].centerx
-        disc.bottom = board.top if i == n_discs else discs[-2].top
-    return discs
 
 
 def refresh():
@@ -120,6 +109,53 @@ def get_number_of_disks():
     return n_disks
 
 
+class Game:
+    def __init__(self, settings: Settings):
+        self.settings = settings
+        pygame.init()
+        pygame.display.set_caption("Towers of Hanoi")
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.board = pygame.Rect(*BOARD_DIMS)
+        self.pegs = self.init_pegs()
+        self.disks = self.init_discs(self.settings.n_disks)
+
+        self.peg_stacks = defaultdict(list)
+        self.peg_stacks[1].extend(self.disks)
+
+        self.print_spaces = len(str(2 ** self.settings.n_disks - 1))
+        self.print_disk_spaces = len(str(self.settings.n_disks))
+
+    def init_pegs(self) -> list[pygame.Rect]:
+        return [pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, 5, self.board.top - PEG_HEIGHT) for peg_num in range(1, 4)]
+
+    def init_discs(self, n_discs) -> list[pygame.Rect]:
+        discs = []
+        for i in range(n_discs, 0, -1):
+            disc = pygame.Rect(0, 0, 0, 0)
+            discs.append(disc)
+            disc.width = 120 if i == n_discs else discs[-2].width * 0.9
+            disc.height = 10
+            disc.centerx = self.pegs[0].centerx
+            disc.bottom = self.board.top if i == n_discs else discs[-2].top
+        return discs
+
+    @staticmethod
+    def check_events():
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                raise QuitGame
+
+    def run(self):
+        for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
+            print(f"{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.")
+            move_disc(from_, to)
+        else:
+            print(f"\n{self.settings.n_disks} discs solved in {i} moves.")
+
+        while True:
+            self.check_events()
+
+
 def parse_args() -> Settings:
     p = argparse.ArgumentParser(description="Animate Towers of Hanoi (pygame).")
     p.add_argument("n_disks", nargs="?", type=int, default=3, help="number of disks (1..15)")
@@ -138,32 +174,6 @@ def parse_args() -> Settings:
 
 
 if __name__ == "__main__":
-    n_disks = get_number_of_disks()
-    print_spaces = len(str(2**n_disks - 1))
-    print_disk_spaces = len(str(n_disks))
 
-    pygame.init()
-    pygame.display.set_caption("Towers of Hanoi")
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    board = pygame.Rect(*BOARD_DIMS)
-    pegs = init_pegs()
-    discs = init_discs(n_disks)
 
-    peg_stacks = defaultdict(list)
-    peg_stacks[1].extend(discs)
 
-    for i, (disc, from_, to) in enumerate(hanoi(n_disks), 1):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                break
-
-        print(f"{i:{print_spaces}}: Move disc {disc:{print_disk_spaces}} from peg {from_} to {to}.")
-        move_disc(from_, to)
-    else:
-        print(f"\n{n_disks} discs solved in {i} moves.")
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
