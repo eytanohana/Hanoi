@@ -20,7 +20,7 @@ build-backend = "uv_build"
 
 
 [project.scripts]
-hanoi-viz = "hanoi.game:main"
+hanoi-viz = "hanoi.cli:main"
 
 # ---- Ruff configuration ----
 [tool.ruff]

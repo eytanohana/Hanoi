@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import argparse
 from collections import defaultdict
-from dataclasses import dataclass
 from typing import Final
 
 import pygame
 from rich import print
 
 from hanoi import hanoi
+from hanoi.cli import Settings
 
 # -----------------------------
 # Constants
@@ -64,13 +63,6 @@ class Color:
         LIGHT_BLUE,
         LIGHT_PURPLE,
     ]
-
-
-@dataclass
-class Settings:
-    n_disks: int = 3
-    speed: int = 6  # movement speed
-    pause_after_solve_ms: int = 0
 
 
 class Game:
@@ -192,33 +184,11 @@ class Game:
         self.peg_stacks[to_peg].append(disc)
 
 
-def parse_args() -> Settings:
-    p = argparse.ArgumentParser(description='Animate Towers of Hanoi (pygame).')
-    p.add_argument('n_disks', nargs='?', type=int, default=3, help='number of disks (1..15)')
-    p.add_argument('--speed', type=int, default=15, help='pixels per frame (movement speed)')
-    args = p.parse_args()
-
-    n = args.n_disks
-    if n < 1:
-        n = 3
-        print(f'[red]Invalid number of disks. Using {n} disks instead.')
-    if n > 10:
-        n = 10
-        print(f'[red]Too many disks. Using {n} disks instead.')
-
-    return Settings(n_disks=n, speed=max(10, args.speed))
-
-
-def main():
+def run_pygame(settings: Settings):
     try:
-        settings = parse_args()
         game = Game(settings)
         game.run()
     except QuitGame:
         print('[blue]quitting game...')
     except KeyboardInterrupt:
         print('[yellow]interrupted, quitting game...')
-
-
-if __name__ == '__main__':
-    main()
