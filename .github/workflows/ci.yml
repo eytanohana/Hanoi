@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_call:
+
+env:
+  UV_VERSION: "0.9.17"
+
+jobs:
+  tests:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
+
+    steps:
+      - name: Checkout repository ${{ github.repository }}
+        uses: actions/checkout@v5
+
+      - name: Setup uv and python
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Lint
+        run: uv run ruff check
+
+      - name: Check formatting
+        run: uv run ruff format --diff
+
+      - name: Run tests
+        run: uv run pytest
