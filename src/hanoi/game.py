@@ -111,16 +111,24 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_ESCAPE, pygame.K_q):
                     raise QuitGame
-                if event.key == pygame.K_SPACE:
+                if event.key in (pygame.K_SPACE, pygame.K_p):
                     self.paused = not self.paused
+                    pygame.display.set_caption('Towers of Hanoi' + (' (Paused)' if self.paused else ''))
                 if event.key == pygame.K_RIGHT:
                     self.step_once = True
                 if event.key == pygame.K_r:
                     self.restart_requested = True
 
+    def wait_if_paused(self):
+        while self.paused:
+            self.handle_events()
+            self.refresh()
+
     def run(self):
         self.refresh()
         for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
+            self.handle_events()
+            self.wait_if_paused()
             console.print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
             self.move_disc(from_, to)
         else:
@@ -175,12 +183,12 @@ class Game:
         y: int | None = None,
         bottom: int | None = None,
     ):
-        while True:
+        done = False
+        while not done:
             self.handle_events()
+            self.wait_if_paused()
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
             self.refresh()
-            if done:
-                return
 
     def move_disc(self, from_peg, to_peg):
         disc = self.peg_stacks[from_peg].pop()
