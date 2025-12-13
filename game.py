@@ -31,12 +31,24 @@ class Color:
     PURPLE = (153, 13, 191)
     LIGHT_PURPLE = (207, 99, 190)
 
-    DISC_COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE,
-                   GREY, BURNT_ORANGE, LIGHT_BLUE, LIGHT_PURPLE]
+    DISC_COLORS = [
+        RED,
+        ORANGE,
+        YELLOW,
+        GREEN,
+        BLUE,
+        PURPLE,
+        GREY,
+        BURNT_ORANGE,
+        LIGHT_BLUE,
+        LIGHT_PURPLE,
+    ]
+
 
 def init_board():
     board = pygame.Rect(*BOARD_DIMS)
     return board
+
 
 def init_pegs():
     pegs = []
@@ -69,12 +81,12 @@ def refresh():
 
 def move_disc(from_peg, to_peg):
     disc = peg_stacks[from_peg].pop()
-    for y in range(disc.centery, HEIGHT//3, -1):
+    for y in range(disc.centery, HEIGHT // 3, -1):
         disc.centery = y
         refresh()
-    to_x = pegs[to_peg-1].centerx
+    to_x = pegs[to_peg - 1].centerx
     step = 1 if to_x > disc.centerx else -1
-    for x in range(disc.centerx, pegs[to_peg-1].centerx+step, step):
+    for x in range(disc.centerx, pegs[to_peg - 1].centerx + step, step):
         disc.centerx = x
         refresh()
 
@@ -83,26 +95,26 @@ def move_disc(from_peg, to_peg):
         to_y = top_disk.top
     except IndexError:
         to_y = board.top
-    for y in range(disc.bottom, to_y+1):
+    for y in range(disc.bottom, to_y + 1):
         disc.bottom = y
         refresh()
 
     peg_stacks[to_peg].append(disc)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         n_discs = int(sys.argv[1])
         if n_discs < 1:
             n_discs = 3
-            print(f'Invalid number of disks. Using {n_discs} disks instead.')
+            print(f"Invalid number of disks. Using {n_discs} disks instead.")
         if n_discs > 15:
             n_discs = 15
-            print(f'Invalid number of disks. Using {n_discs} disks instead.')
+            print(f"Invalid number of disks. Using {n_discs} disks instead.")
     except IndexError:
         n_discs = 3
 
-    print_spaces = len(str(2 ** n_discs - 1))
+    print_spaces = len(str(2**n_discs - 1))
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     board = init_board()
@@ -117,10 +129,10 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 break
 
-        print(f'{i:{print_spaces}} Move disc {disc:2} from {from_} to {to}.')
+        print(f"{i:{print_spaces}} Move disc {disc:2} from {from_} to {to}.")
         move_disc(from_, to)
     else:
-        print(f'\n{n_discs} discs solved in {i} moves.')
+        print(f"\n{n_discs} discs solved in {i} moves.")
 
     running = True
     while running:
