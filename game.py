@@ -1,9 +1,9 @@
-from collections import defaultdict
-from hanoi import hanoi
-import time
 import sys
+from collections import defaultdict
+
 import pygame
 
+from hanoi import hanoi
 
 WIDTH = 600
 HEIGHT = 400
@@ -112,18 +112,18 @@ if __name__ == '__main__':
     peg_stacks = defaultdict(list)
     peg_stacks[1].extend(discs)
 
+    for i, (disc, from_, to) in enumerate(hanoi(n_discs), 1):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                break
+
+        print(f'{i:{print_spaces}} Move disc {disc:2} from {from_} to {to}.')
+        move_disc(from_, to)
+    else:
+        print(f'\n{n_discs} discs solved in {i} moves.')
+
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
-        refresh()
-        time.sleep(2)
-        for i, (disc, from_, to) in enumerate(hanoi(n_discs), 1):
-            print(f'{i:{print_spaces}} Move disc {disc:2} from {from_} to {to}.')
-            move_disc(from_, to)
-        print()
-        print(f'{n_discs} discs solved in {i} moves.')
-        running = False
-        time.sleep(5)
