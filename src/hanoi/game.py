@@ -87,6 +87,12 @@ class Game:
         self.paused = False
         self.step_once = False
         self.restart_requested = False
+
+        # Initialize font for text display
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 24)
+        self.current_move_text = None
+
         self._update_caption()
 
     def init_pegs(self) -> list[pygame.Rect]:
@@ -124,6 +130,7 @@ class Game:
         self.step_once = False
         self.restart_requested = False
         self.finished = False
+        self.current_move_text = None
         self._update_caption()
 
     def handle_events(self) -> None:
@@ -183,9 +190,11 @@ class Game:
                 # Execute next move
                 try:
                     i, (disc, from_, to) = next(move_iterator)
-                    console.print(
+                    move_text = (
                         f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.'
                     )
+                    console.print(move_text)
+                    self.current_move_text = move_text
                     self.move_disc(from_, to)
 
                     # If in step mode, pause after completing the move
@@ -196,7 +205,9 @@ class Game:
                 except StopIteration:
                     self.finished = True
                     # All moves completed
-                    console.print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
+                    completion_text = f'{self.settings.n_disks} discs solved in {i} moves.'
+                    console.print(f'\n[green]{completion_text}')
+                    self.current_move_text = completion_text
                     # Wait for restart or quit
                     while True:
                         self.handle_events()
@@ -213,6 +224,15 @@ class Game:
             pygame.draw.rect(self.screen, Color.BLACK, peg)
         for i, disc in enumerate(self.disks):
             pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
+
+        # Display current move text
+        if self.current_move_text:
+            text_surface = self.font.render(self.current_move_text, True, Color.BLACK)
+            text_rect = text_surface.get_rect()
+            text_rect.centerx = WIDTH // 2
+            text_rect.centery = HEIGHT // 5
+            self.screen.blit(text_surface, text_rect)
+
         pygame.display.flip()
         self.clock.tick(FPS)
 
