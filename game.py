@@ -192,10 +192,10 @@ def parse_args() -> Settings:
     n = args.n_disks
     if n < 1:
         n = 3
-        print('Invalid number of disks. Using 3 disks instead.')
+        print(f'Invalid number of disks. Using {n} disks instead.')
     if n > 10:
         n = 10
-        print('Too many disks. Using 15 disks instead.')
+        print(f'Too many disks. Using {n} disks instead.')
 
     return Settings(n_disks=n, speed=max(10, args.speed))
 
