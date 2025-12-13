@@ -52,7 +52,7 @@ cd Hanoi
 ### 2️⃣ Run the game
 
 ``` bash
-uv run game.py
+uv run hanoi
 ```
 
 ------------------------------------------------------------------------
@@ -60,7 +60,7 @@ uv run game.py
 ## 🎮 Usage
 
 ``` bash
-uv run game.py [n_disks] [--speed SPEED]
+uv run hanoi [n_disks] [--speed SPEED]
 ```
 
 ### Arguments
@@ -73,9 +73,9 @@ uv run game.py [n_disks] [--speed SPEED]
 ### Examples
 
 ``` bash
-uv run game.py
-uv run game.py 5
-uv run game.py 6 --speed 25
+uv run hanoi
+uv run hanoi 5
+uv run hanoi 6 --speed 25
 ```
 
 ------------------------------------------------------------------------
@@ -86,19 +86,6 @@ uv run game.py 6 --speed 25
 -   Each yielded move `(disc, from_peg, to_peg)` is animated in pygame.
 -   Disks are lifted, slid horizontally, and dropped with smooth per-frame motion.
 -   The game loop remains responsive at all times.
-
-------------------------------------------------------------------------
-
-## 🗂 Project Structure
-
-    .
-    ├── game.py        # Main pygame application
-    ├── hanoi.py       # Hanoi solver (generator)
-    ├── static/
-    │   └── hanoi.gif  # Demo animation
-    ├── pyproject.toml
-    ├── uv.lock
-    └── README.md
 
 ------------------------------------------------------------------------
 
