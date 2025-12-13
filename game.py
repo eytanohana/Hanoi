@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Final
 
 import pygame
+from rich import print
 
 from hanoi import hanoi
 

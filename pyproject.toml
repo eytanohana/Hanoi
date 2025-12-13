@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "pygame>=2.6.1",
+    "rich>=14.2.0",
 ]
 
 # ---- Ruff configuration ----
