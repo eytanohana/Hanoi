@@ -4,10 +4,12 @@ from collections import defaultdict
 from typing import Final
 
 import pygame
-from rich import print
+from rich.console import Console
 
 from hanoi import hanoi
 from hanoi.cli import Settings
+
+console = Console()
 
 # -----------------------------
 # Constants
@@ -69,7 +71,6 @@ class Game:
     def __init__(self, settings: Settings):
         self.settings = settings
         pygame.init()
-        pygame.display.set_caption('Towers of Hanoi')
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.board = pygame.Rect(BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT)
         self.pegs = self.init_pegs()
@@ -81,6 +82,18 @@ class Game:
         self.print_spaces = len(str(2**self.settings.n_disks - 1))
         self.print_disk_spaces = len(str(self.settings.n_disks))
         self.clock = pygame.time.Clock()
+
+        self.finished = False
+        self.paused = False
+        self.step_once = False
+        self.restart_requested = False
+
+        # Initialize font for text display
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 24)
+        self.current_move_text = None
+
+        self._update_caption()
 
     def init_pegs(self) -> list[pygame.Rect]:
         return [
@@ -98,23 +111,111 @@ class Game:
             discs.append(disc)
         return discs
 
-    @staticmethod
-    def check_events():
+    def reset_game(self):
+        """Reset the game to its initial state."""
+        # Reset disc positions to peg 1
+        for i, disc in enumerate(self.disks):
+            disc.centerx = self.pegs[0].centerx
+            if i == 0:
+                disc.bottom = self.board.top
+            else:
+                disc.bottom = self.disks[i - 1].top
+
+        # Reset peg stacks
+        self.peg_stacks.clear()
+        self.peg_stacks[1].extend(self.disks)
+
+        # Reset game state
+        self.paused = False
+        self.step_once = False
+        self.restart_requested = False
+        self.finished = False
+        self.current_move_text = None
+        self._update_caption()
+
+    def handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 raise QuitGame
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_ESCAPE, pygame.K_q):
+                    raise QuitGame
+                if event.key in (pygame.K_SPACE, pygame.K_p):
+                    self.paused = not self.paused
+                    if not self.paused:
+                        # Resuming from pause - exit step mode to allow continuous running
+                        self.step_once = False
+                    self._update_caption()
+                if event.key in (pygame.K_RIGHT, pygame.K_n):
+                    self.step_once = True
+                    if self.paused:
+                        self.paused = False
+                    self._update_caption()
+                if event.key == pygame.K_r:
+                    self.restart_requested = True
+
+    def _update_caption(self):
+        caption = 'Towers of Hanoi'
+        if not self.finished:
+            if self.step_once:
+                caption += '(Step)'
+            elif self.paused:
+                caption += ' (Paused)'
+        pygame.display.set_caption(caption)
+
+    def wait_if_paused(self):
+        while self.paused and not self.restart_requested:
+            self.handle_events()
+            self.refresh()
 
     def run(self):
-        self.refresh()
-        for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
-            print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
-            self.move_disc(from_, to)
-        else:
-            print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
-
         while True:
-            self.check_events()
             self.refresh()
+            move_iterator = enumerate(hanoi(self.settings.n_disks), 1)
+            i = 0
+
+            while True:
+                self.handle_events()
+
+                # Check for restart request
+                if self.restart_requested:
+                    self.reset_game()
+                    break  # Break inner loop to restart
+
+                # If paused, wait (unless step_once is triggered, which will unpause)
+                if self.paused and not self.step_once:
+                    self.refresh()
+                    continue
+
+                # Execute next move
+                try:
+                    i, (disc, from_, to) = next(move_iterator)
+                    move_text = (
+                        f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.'
+                    )
+                    console.print(move_text)
+                    self.current_move_text = move_text
+                    self.move_disc(from_, to)
+
+                    # If in step mode, pause after completing the move
+                    if self.step_once:
+                        self._update_caption()
+                        self.paused = True
+                        self.step_once = False
+                except StopIteration:
+                    self.finished = True
+                    # All moves completed
+                    completion_text = f'{self.settings.n_disks} discs solved in {i} moves.'
+                    console.print(f'\n[green]{completion_text}')
+                    self.current_move_text = completion_text
+                    # Wait for restart or quit
+                    while True:
+                        self.handle_events()
+                        if self.restart_requested:
+                            self.reset_game()
+                            break  # Break to restart outer loop
+                        self.refresh()
+                    break  # Break inner loop to restart
 
     def refresh(self):
         self.screen.fill(Color.WHITE)
@@ -123,6 +224,15 @@ class Game:
             pygame.draw.rect(self.screen, Color.BLACK, peg)
         for i, disc in enumerate(self.disks):
             pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
+
+        # Display current move text
+        if self.current_move_text:
+            text_surface = self.font.render(self.current_move_text, True, Color.BLACK)
+            text_rect = text_surface.get_rect()
+            text_rect.centerx = WIDTH // 2
+            text_rect.centery = HEIGHT // 5
+            self.screen.blit(text_surface, text_rect)
+
         pygame.display.flip()
         self.clock.tick(FPS)
 
@@ -161,12 +271,14 @@ class Game:
         y: int | None = None,
         bottom: int | None = None,
     ):
-        while True:
-            self.check_events()
+        done = False
+        while not done and not self.restart_requested:
+            self.handle_events()
+            self.wait_if_paused()
+            if self.restart_requested:
+                break
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
             self.refresh()
-            if done:
-                return
 
     def move_disc(self, from_peg, to_peg):
         disc = self.peg_stacks[from_peg].pop()
@@ -189,6 +301,6 @@ def run_pygame(settings: Settings):
         game = Game(settings)
         game.run()
     except QuitGame:
-        print('[blue]quitting game...')
+        console.print('[blue]quitting game...')
     except KeyboardInterrupt:
-        print('[yellow]interrupted, quitting game...')
+        console.print('[yellow]interrupted, quitting game...')
