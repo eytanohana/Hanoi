@@ -1,6 +1,6 @@
 [project]
 name = "hanoi-viz"
-version = "0.2.3"
+version = "0.2.4"
 description = "Visualize solving the tower of Hanoi problem"
 readme = "README.md"
 license = { text = "MIT" }
@@ -20,7 +20,7 @@ build-backend = "uv_build"
 
 
 [project.scripts]
-hanoi-viz = "hanoi.game:main"
+hanoi-viz = "hanoi.cli:main"
 
 # ---- Ruff configuration ----
 [tool.ruff]
