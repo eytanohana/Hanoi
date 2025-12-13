@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 from collections import defaultdict
 
@@ -45,19 +46,11 @@ class Color:
     ]
 
 
-def init_board():
-    board = pygame.Rect(*BOARD_DIMS)
-    return board
+def init_pegs() -> list[pygame.Rect]:
+    return [pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, 5, board.top - PEG_HEIGHT) for peg_num in range(1, 4)]
 
 
-def init_pegs():
-    pegs = []
-    for i in range(1, 4):
-        pegs.append(pygame.Rect(i * WIDTH // 4, PEG_HEIGHT, 5, board.top - PEG_HEIGHT))
-    return pegs
-
-
-def init_discs(n_discs):
+def init_discs(n_discs) -> list[pygame.Rect]:
     discs = []
     for i in range(n_discs, 0, -1):
         disc = pygame.Rect(0, 0, 0, 0)
@@ -102,30 +95,35 @@ def move_disc(from_peg, to_peg):
     peg_stacks[to_peg].append(disc)
 
 
-if __name__ == "__main__":
+def get_number_of_disks():
     try:
-        n_discs = int(sys.argv[1])
-        if n_discs < 1:
-            n_discs = 3
-            print(f"Invalid number of disks. Using {n_discs} disks instead.")
-        if n_discs > 15:
-            n_discs = 15
-            print(f"Invalid number of disks. Using {n_discs} disks instead.")
+        n_disks = int(sys.argv[1])
+        if n_disks < 1:
+            n_disks = 3
+            print(f"Invalid number of disks. Using {n_disks} disks instead.")
+        if n_disks > 15:
+            n_disks = 15
+            print(f"Invalid number of disks. Using {n_disks} disks instead.")
     except IndexError:
-        n_discs = 3
+        n_disks = 3
+    return n_disks
 
-    print_spaces = len(str(2**n_discs - 1))
-    print_disk_spaces = len(str(n_discs))
+
+if __name__ == "__main__":
+    n_disks = get_number_of_disks()
+    print_spaces = len(str(2**n_disks - 1))
+    print_disk_spaces = len(str(n_disks))
+
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    board = init_board()
+    board = pygame.Rect(*BOARD_DIMS)
     pegs = init_pegs()
-    discs = init_discs(n_discs)
+    discs = init_discs(n_disks)
 
     peg_stacks = defaultdict(list)
     peg_stacks[1].extend(discs)
 
-    for i, (disc, from_, to) in enumerate(hanoi(n_discs), 1):
+    for i, (disc, from_, to) in enumerate(hanoi(n_disks), 1):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 break
@@ -133,7 +131,7 @@ if __name__ == "__main__":
         print(f"{i:{print_spaces}}: Move disc {disc:{print_disk_spaces}} from peg {from_} to {to}.")
         move_disc(from_, to)
     else:
-        print(f"\n{n_discs} discs solved in {i} moves.")
+        print(f"\n{n_disks} discs solved in {i} moves.")
 
     running = True
     while running:
