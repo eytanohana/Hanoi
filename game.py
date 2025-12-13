@@ -91,7 +91,8 @@ class Game:
 
     def init_pegs(self) -> list[pygame.Rect]:
         return [
-            pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, PEG_WIDTH, self.board.top - PEG_HEIGHT) for peg_num in range(1, 4)
+            pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, PEG_WIDTH, self.board.top - PEG_HEIGHT)
+            for peg_num in range(1, 4)
         ]
 
     def init_discs(self, n_discs) -> list[pygame.Rect]:
