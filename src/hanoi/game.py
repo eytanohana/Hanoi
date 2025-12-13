@@ -4,10 +4,12 @@ from collections import defaultdict
 from typing import Final
 
 import pygame
-from rich import print
+from rich.console import Console
 
 from hanoi import hanoi
 from hanoi.cli import Settings
+
+console = Console()
 
 # -----------------------------
 # Constants
@@ -107,10 +109,10 @@ class Game:
     def run(self):
         self.refresh()
         for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
-            print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
+            console.print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
             self.move_disc(from_, to)
         else:
-            print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
+            console.print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
 
         while True:
             self.check_events()
@@ -189,6 +191,6 @@ def run_pygame(settings: Settings):
         game = Game(settings)
         game.run()
     except QuitGame:
-        print('[blue]quitting game...')
+        console.print('[blue]quitting game...')
     except KeyboardInterrupt:
-        print('[yellow]interrupted, quitting game...')
+        console.print('[yellow]interrupted, quitting game...')
