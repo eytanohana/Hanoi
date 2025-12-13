@@ -84,6 +84,10 @@ class Game:
         self.print_disk_spaces = len(str(self.settings.n_disks))
         self.clock = pygame.time.Clock()
 
+        self.paused = False
+        self.step_once = False
+        self.restart_requested = False
+
     def init_pegs(self) -> list[pygame.Rect]:
         return [
             pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, PEG_WIDTH, self.board.top - PEG_HEIGHT)
@@ -100,11 +104,19 @@ class Game:
             discs.append(disc)
         return discs
 
-    @staticmethod
-    def check_events():
+    def handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 raise QuitGame
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_ESCAPE, pygame.K_q):
+                    raise QuitGame
+                if event.key == pygame.K_SPACE:
+                    self.paused = not self.paused
+                if event.key == pygame.K_RIGHT:
+                    self.step_once = True
+                if event.key == pygame.K_r:
+                    self.restart_requested = True
 
     def run(self):
         self.refresh()
@@ -115,7 +127,7 @@ class Game:
             console.print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
 
         while True:
-            self.check_events()
+            self.handle_events()
             self.refresh()
 
     def refresh(self):
@@ -164,7 +176,7 @@ class Game:
         bottom: int | None = None,
     ):
         while True:
-            self.check_events()
+            self.handle_events()
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
             self.refresh()
             if done:
