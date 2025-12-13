@@ -21,6 +21,7 @@ BOARD_DIMS = BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT
 
 PEG_HEIGHT = HEIGHT // 2
 
+
 class QuitGame(Exception):
     pass
 
@@ -73,12 +74,17 @@ class Game:
         self.peg_stacks = defaultdict(list)
         self.peg_stacks[1].extend(self.disks)
 
-        self.print_spaces = len(str(2 ** self.settings.n_disks - 1))
+        self.print_spaces = len(str(2**self.settings.n_disks - 1))
         self.print_disk_spaces = len(str(self.settings.n_disks))
         self.clock = pygame.time.Clock()
 
     def init_pegs(self) -> list[pygame.Rect]:
-        return [pygame.Rect(peg_num * WIDTH // 4, PEG_HEIGHT, 5, self.board.top - PEG_HEIGHT) for peg_num in range(1, 4)]
+        return [
+            pygame.Rect(
+                peg_num * WIDTH // 4, PEG_HEIGHT, 5, self.board.top - PEG_HEIGHT
+            )
+            for peg_num in range(1, 4)
+        ]
 
     def init_discs(self, n_discs) -> list[pygame.Rect]:
         discs = []
@@ -101,7 +107,9 @@ class Game:
         try:
             self.refresh()
             for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
-                print(f"{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.")
+                print(
+                    f"{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}."
+                )
                 self.move_disc(from_, to)
             else:
                 print(f"\n{self.settings.n_disks} discs solved in {i} moves.")
@@ -118,11 +126,20 @@ class Game:
         for peg in self.pegs:
             pygame.draw.rect(self.screen, Color.BLACK, peg)
         for i, disc in enumerate(self.disks):
-            pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
+            pygame.draw.rect(
+                self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc
+            )
         pygame.display.flip()
         self.clock.tick(FPS)
 
-    def _step_towards(self, rect: pygame.Rect, *, x: int | None = None, y: int | None = None, bottom: int | None = None):
+    def _step_towards(
+        self,
+        rect: pygame.Rect,
+        *,
+        x: int | None = None,
+        y: int | None = None,
+        bottom: int | None = None,
+    ):
         speed = self.settings.speed
 
         def approach(current: int, target: int):
@@ -142,7 +159,14 @@ class Game:
             done &= ok
         return done
 
-    def _animate_to(self, rect: pygame.Rect, *, x: int | None = None, y: int | None = None, bottom: int | None = None):
+    def _animate_to(
+        self,
+        rect: pygame.Rect,
+        *,
+        x: int | None = None,
+        y: int | None = None,
+        bottom: int | None = None,
+    ):
         while True:
             self.check_events()
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
@@ -168,8 +192,12 @@ class Game:
 
 def parse_args() -> Settings:
     p = argparse.ArgumentParser(description="Animate Towers of Hanoi (pygame).")
-    p.add_argument("n_disks", nargs="?", type=int, default=3, help="number of disks (1..15)")
-    p.add_argument("--speed", type=int, default=15, help="pixels per frame (movement speed)")
+    p.add_argument(
+        "n_disks", nargs="?", type=int, default=3, help="number of disks (1..15)"
+    )
+    p.add_argument(
+        "--speed", type=int, default=15, help="pixels per frame (movement speed)"
+    )
     args = p.parse_args()
 
     n = args.n_disks
