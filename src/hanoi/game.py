@@ -99,7 +99,7 @@ class Game:
     def init_discs(self, n_discs) -> list[pygame.Rect]:
         discs = []
         for i in range(n_discs, 0, -1):
-            width = DISC_WIDTH if i == n_discs else discs[-1].width * 0.9
+            width = DISC_WIDTH if i == n_discs else int(discs[-1].width * 0.9)
             disc = pygame.Rect(0, 0, width, DISC_HEIGHT)
             disc.centerx = self.pegs[0].centerx
             disc.bottom = self.board.top if i == n_discs else discs[-1].top
