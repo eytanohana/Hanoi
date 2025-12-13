@@ -10,6 +10,14 @@ dependencies = [
     "rich>=14.2.0",
 ]
 
+[build-system]
+requires = ["uv_build>=0.9.13,<0.10.0"]
+build-backend = "uv_build"
+
+
+[project.scripts]
+hanoi = "hanoi.game:main"
+
 # ---- Ruff configuration ----
 [tool.ruff]
 line-length = 120
