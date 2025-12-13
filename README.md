@@ -52,7 +52,7 @@ cd Hanoi
 ### 2️⃣ Run the game
 
 ``` bash
-uv run hanoi
+uv run hanoi-viz
 ```
 
 ------------------------------------------------------------------------
@@ -60,7 +60,7 @@ uv run hanoi
 ## 🎮 Usage
 
 ``` bash
-uv run hanoi [n_disks] [--speed SPEED]
+uv run hanoi-viz [n_disks] [--speed SPEED]
 ```
 
 ### Arguments
@@ -73,9 +73,9 @@ uv run hanoi [n_disks] [--speed SPEED]
 ### Examples
 
 ``` bash
-uv run hanoi
-uv run hanoi 5
-uv run hanoi 6 --speed 25
+uv run hanoi-viz
+uv run hanoi-viz 5
+uv run hanoi-viz 6 --speed 25
 ```
 
 ------------------------------------------------------------------------
