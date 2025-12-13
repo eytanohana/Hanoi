@@ -113,19 +113,16 @@ class Game:
                 raise QuitGame
 
     def run(self):
-        try:
-            self.refresh()
-            for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
-                print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
-                self.move_disc(from_, to)
-            else:
-                print(f'\n{self.settings.n_disks} discs solved in {i} moves.')
+        self.refresh()
+        for i, (disc, from_, to) in enumerate(hanoi(self.settings.n_disks), 1):
+            print(f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.')
+            self.move_disc(from_, to)
+        else:
+            print(f'\n[green]{self.settings.n_disks} discs solved in {i} moves.')
 
-            while True:
-                self.check_events()
-                self.refresh()
-        except QuitGame:
-            return
+        while True:
+            self.check_events()
+            self.refresh()
 
     def refresh(self):
         self.screen.fill(Color.WHITE)
@@ -204,18 +201,23 @@ def parse_args() -> Settings:
     n = args.n_disks
     if n < 1:
         n = 3
-        print(f'Invalid number of disks. Using {n} disks instead.')
+        print(f'[red]Invalid number of disks. Using {n} disks instead.')
     if n > 10:
         n = 10
-        print(f'Too many disks. Using {n} disks instead.')
+        print(f'[red]Too many disks. Using {n} disks instead.')
 
     return Settings(n_disks=n, speed=max(10, args.speed))
 
 
 def main():
-    settings = parse_args()
-    game = Game(settings)
-    game.run()
+    try:
+        settings = parse_args()
+        game = Game(settings)
+        game.run()
+    except QuitGame:
+        print('[blue]quitting game...')
+    except KeyboardInterrupt:
+        print('[yellow]interrupted, quitting game...')
 
 
 if __name__ == '__main__':
