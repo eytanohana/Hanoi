@@ -25,3 +25,6 @@ DISC_WIDTH: Final[int] = 120
 
 # Animation
 LIFT_Y: Final[int] = HEIGHT // 3
+
+# Pre-start delay (in milliseconds) before simulation begins
+PRE_START_DELAY_MS: Final[int] = 2000

@@ -23,6 +23,7 @@ from .constants import (
     LIFT_Y,
     PEG_HEIGHT,
     PEG_WIDTH,
+    PRE_START_DELAY_MS,
     WIDTH,
 )
 from .exceptions import QuitGame, ReturnToStartScreen
@@ -119,6 +120,18 @@ class Game:
         """Run the main game loop."""
         while True:
             self.refresh()
+
+            # Pre-start delay: allow user to exit/pause/step before simulation begins
+            start_time = pygame.time.get_ticks()
+            while pygame.time.get_ticks() - start_time < PRE_START_DELAY_MS:
+                self.handle_events()
+                if self.step_once:  # If user pressed step, start immediately
+                    break
+                if self.paused:  # If paused, wait (user can still exit)
+                    self.refresh()
+                    continue
+                self.refresh()  # Otherwise, continue waiting and refreshing
+
             move_iterator = enumerate(hanoi(self.settings.n_disks), 1)
             i = 0
 
