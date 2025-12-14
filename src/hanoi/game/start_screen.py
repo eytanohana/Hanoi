@@ -60,7 +60,7 @@ class StartScreen:
                 field_type=FieldType.N_DISKS,
                 label='Number of Disks (1-15):',
                 value=default_settings.n_disks,
-                validator=lambda x: max(1,  min(x, 15)),
+                validator=lambda x: max(1, min(x, 15)),
             ),
             FieldType.SPEED: InputField(
                 field_type=FieldType.SPEED,

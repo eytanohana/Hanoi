@@ -25,6 +25,7 @@ from .constants import (
     PEG_WIDTH,
     PRE_START_DELAY_MS,
     WIDTH,
+    CAPTION,
 )
 from .exceptions import QuitGame, ReturnToStartScreen
 
@@ -102,7 +103,7 @@ class Game:
 
     def _update_caption(self) -> None:
         """Update the window caption based on game state."""
-        caption = 'Towers of Hanoi'
+        caption = CAPTION
         if not self.finished:
             if self.step_once:
                 caption += '(Step)'

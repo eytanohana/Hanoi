@@ -7,7 +7,7 @@ from rich.console import Console
 
 from hanoi.cli import Settings
 
-from .constants import HEIGHT, WIDTH
+from .constants import HEIGHT, WIDTH, CAPTION
 from .exceptions import QuitGame, ReturnToStartScreen
 from .game import Game
 from .start_screen import StartScreen
@@ -24,6 +24,7 @@ def run_pygame(settings: Settings) -> None:
     try:
         pygame.init()
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption(CAPTION)
         current_settings = settings
 
         # Main loop: start screen -> game -> start screen (on restart)

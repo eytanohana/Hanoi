@@ -28,3 +28,5 @@ LIFT_Y: Final[int] = HEIGHT // 3
 
 # Pre-start delay (in milliseconds) before simulation begins
 PRE_START_DELAY_MS: Final[int] = 2000
+
+CAPTION: Final[str] = 'Towers of Hanoi'
