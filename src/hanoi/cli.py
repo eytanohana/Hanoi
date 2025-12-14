@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> None:
             run_headless(settings)
         else:
             # Import pygame only when needed
-            from hanoi.game import run_pygame
+            from .game import run_pygame
 
             run_pygame(settings)
 
