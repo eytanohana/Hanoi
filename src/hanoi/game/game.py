@@ -16,6 +16,7 @@ from .constants import (
     BOARD_POS_LEFT,
     BOARD_POS_TOP,
     BOARD_WIDTH,
+    CAPTION,
     DISC_HEIGHT,
     DISC_WIDTH,
     FPS,
@@ -25,7 +26,6 @@ from .constants import (
     PEG_WIDTH,
     PRE_START_DELAY_MS,
     WIDTH,
-    CAPTION,
 )
 from .exceptions import QuitGame, ReturnToStartScreen
 

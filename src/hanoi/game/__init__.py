@@ -7,7 +7,7 @@ from rich.console import Console
 
 from hanoi.cli import Settings
 
-from .constants import HEIGHT, WIDTH, CAPTION
+from .constants import CAPTION, HEIGHT, WIDTH
 from .exceptions import QuitGame, ReturnToStartScreen
 from .game import Game
 from .start_screen import StartScreen
