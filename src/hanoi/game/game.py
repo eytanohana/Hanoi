@@ -147,7 +147,8 @@ class Game:
                         self.step_once = False
                 except StopIteration:
                     self.finished = True
-                    completion_text = f'{self.settings.n_disks} discs solved in {i} moves.'
+                    suffix = 's' if self.settings.n_disks > 1 else ''
+                    completion_text = f'{self.settings.n_disks} disc{suffix} solved in {i} move{suffix}.'
                     console.print(f'\n[green]{completion_text}')
                     self.current_move_text = completion_text
                     while True:  # Wait for restart or quit
