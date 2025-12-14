@@ -31,9 +31,9 @@ def parse_args(argv: list[str] | None = None) -> Settings:
     if n < 1:
         console.print('[yellow]Invalid number of disks. Using 3.[/]')
         n = 3
-    if n > 10:
-        console.print('[yellow]Too many disks. Using 10.[/]')
-        n = 10
+    if n > 15:
+        console.print('[yellow]Too many disks. Using 15.[/]')
+        n = 15
 
     speed = max(1, args.speed)
 
