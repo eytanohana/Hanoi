@@ -15,7 +15,6 @@ err_console = Console(stderr=True)
 class Settings:
     n_disks: int
     speed: int
-    fps: int
     animate: bool
 
 
@@ -23,7 +22,6 @@ def parse_args(argv: list[str] | None = None) -> Settings:
     p = argparse.ArgumentParser(description='Animate Towers of Hanoi.')
     p.add_argument('n_disks', nargs='?', type=int, default=3, help='number of disks (1..10)')
     p.add_argument('--speed', type=int, default=15, help='pixels per frame (movement speed)')
-    p.add_argument('--fps', type=int, default=60, help='frame rate cap (1..240)')
     p.add_argument('--no-animate', action='store_true', help='print moves only; do not open a window')
     args = p.parse_args(argv)
 
@@ -36,9 +34,8 @@ def parse_args(argv: list[str] | None = None) -> Settings:
         n = 10
 
     speed = max(1, args.speed)
-    fps = min(240, max(1, args.fps))
 
-    return Settings(n_disks=n, speed=speed, fps=fps, animate=not args.no_animate)
+    return Settings(n_disks=n, speed=speed, animate=not args.no_animate)
 
 
 def run_headless(settings: Settings) -> None:

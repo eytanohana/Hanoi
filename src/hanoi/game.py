@@ -16,7 +16,7 @@ console = Console()
 # -----------------------------
 FPS: Final[int] = 60
 
-WIDTH: Final[int] = 600
+WIDTH: Final[int] = 800
 HEIGHT: Final[int] = 400
 
 
@@ -81,11 +81,11 @@ class StartScreen:
         # Current values
         self.n_disks = default_settings.n_disks
         self.speed = default_settings.speed
-        self.fps = default_settings.fps
         
         # Input states
-        self.active_field = 0  # 0: n_disks, 1: speed, 2: fps, 3: start button
-        self.input_texts = [str(self.n_disks), str(self.speed), str(self.fps)]
+        self.active_field = 0  # 0: n_disks, 1: speed, 2: start button
+
+        self.input_texts = [str(self.n_disks), str(self.speed)]
         self.editing = False
         
         # Fonts
@@ -121,7 +121,7 @@ class StartScreen:
         
         # Start game or toggle edit mode
         if event.key in (pygame.K_RETURN, pygame.K_SPACE):
-            if self.active_field == 3:  # Start button
+            if self.active_field == 2:  # Start button
                 return self._create_settings()
             self._toggle_edit_mode()
             return None
@@ -140,16 +140,16 @@ class StartScreen:
     
     def _navigate_up(self) -> None:
         """Navigate to the previous field."""
-        if self.editing and self.active_field < 3:
+        if self.editing and self.active_field < len(self.input_texts):
             self._commit_field()
-        self.active_field = (self.active_field - 1) % 4
+        self.active_field = (self.active_field - 1) % (len(self.input_texts) + 1)
         self.editing = False
     
     def _navigate_down(self) -> None:
         """Navigate to the next field."""
-        if self.editing and self.active_field < 3:
+        if self.editing and self.active_field < len(self.input_texts):
             self._commit_field()
-        self.active_field = (self.active_field + 1) % 4
+        self.active_field = (self.active_field + 1) % (len(self.input_texts) + 1)
         self.editing = False
     
     def _toggle_edit_mode(self) -> None:
@@ -191,12 +191,9 @@ class StartScreen:
         if self.active_field == 0:  # n_disks
             self.n_disks = max(1, min(10, value))
             self.input_texts[0] = str(self.n_disks)
-        elif self.active_field == 1:  # speed
+        else:  # self.active_field == 1:  # speed
             self.speed = max(1, value)
             self.input_texts[1] = str(self.speed)
-        else:  # fps
-            self.fps = max(1, min(240, value))
-            self.input_texts[2] = str(self.fps)
     
     def _reset_field_display(self) -> None:
         """Reset the current field display to its committed value."""
@@ -204,8 +201,6 @@ class StartScreen:
             self.input_texts[0] = str(self.n_disks)
         elif self.active_field == 1:
             self.input_texts[1] = str(self.speed)
-        elif self.active_field == 2:
-            self.input_texts[2] = str(self.fps)
 
     def _create_settings(self) -> Settings:
         """Create Settings object from current values."""
@@ -213,7 +208,6 @@ class StartScreen:
         return Settings(
             n_disks=self.n_disks,
             speed=self.speed,
-            fps=self.fps,
             animate=True
         )
     
@@ -225,14 +219,13 @@ class StartScreen:
         self._render_title()
         
         # Configuration fields
-        y_start = 160
+        y_start = 140
         spacing = 60
         self._render_field(0, "Number of Disks (1-10):", self.input_texts[0], y_start)
         self._render_field(1, "Speed (pixels/frame):", self.input_texts[1], y_start + spacing)
-        self._render_field(2, "FPS (1-240):", self.input_texts[2], y_start + 2 * spacing)
         
         # Start button
-        self._render_button(3, "Start Game", y_start + 3 * spacing + 20)
+        self._render_button(2, "Start Game", y_start + 2 * spacing + 20)
         
         # Instructions
         self._render_instructions()
@@ -242,11 +235,11 @@ class StartScreen:
     def _render_title(self) -> None:
         """Render the title and subtitle."""
         title_text = self.title_font.render("Towers of Hanoi", True, self.text_color)
-        title_rect = title_text.get_rect(center=(WIDTH // 2, 60))
+        title_rect = title_text.get_rect(center=(WIDTH // 2, 40))
         self.screen.blit(title_text, title_rect)
         
         subtitle_text = self.label_font.render("Configure Game Settings", True, self.inactive_color)
-        subtitle_rect = subtitle_text.get_rect(center=(WIDTH // 2, 100))
+        subtitle_rect = subtitle_text.get_rect(center=(WIDTH // 2, 80))
         self.screen.blit(subtitle_text, subtitle_rect)
     
     def _render_instructions(self) -> None:
@@ -317,7 +310,7 @@ class StartScreen:
                     return settings
             
             self.render()
-            clock.tick(60)
+            clock.tick(FPS)
 
 
 class Game:
@@ -453,7 +446,7 @@ class Game:
             self.screen.blit(text_surface, text_rect)
 
         pygame.display.flip()
-        self.clock.tick(self.settings.fps)
+        self.clock.tick(FPS)
 
     def _step_towards(
         self,
