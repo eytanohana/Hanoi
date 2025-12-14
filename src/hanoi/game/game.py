@@ -151,6 +151,7 @@ class Game:
                     completion_text = f'{self.settings.n_disks} disc{suffix} solved in {i} move{suffix}.'
                     console.print(f'\n[green]{completion_text}')
                     self.current_move_text = completion_text
+                    self._update_caption()
                     while True:  # Wait for restart or quit
                         self.handle_events()
                         self.refresh()
