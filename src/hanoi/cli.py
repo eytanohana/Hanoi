@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from rich.console import Console
 
+from hanoi import __version__
 from hanoi.solver import hanoi
 
 console = Console()
@@ -20,6 +21,7 @@ class Settings:
 
 def parse_args(argv: list[str] | None = None) -> Settings:
     p = argparse.ArgumentParser(description='Animate Towers of Hanoi.')
+    p.add_argument('--version', '-V', action='version', version=__version__)
     p.add_argument('n_disks', nargs='?', type=int, default=3, help='number of disks (1..10)')
     p.add_argument('--speed', type=int, default=15, help='pixels per frame (movement speed)')
     p.add_argument('--no-animate', action='store_true', help='print moves only; do not open a window')
