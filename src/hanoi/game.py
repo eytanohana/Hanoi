@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Final
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Callable, Final
 
 import pygame
 from rich.console import Console
@@ -43,6 +45,38 @@ class ReturnToStartScreen(Exception):
     """Raised to return to the start screen from the game."""
 
 
+class FieldType(str, Enum):
+    """Field identifiers for the start screen."""
+
+    N_DISKS = 'n_disks'
+    SPEED = 'speed'
+    START_BUTTON = 'start_button'
+
+
+@dataclass
+class InputField:
+    """Represents an input field in the start screen."""
+
+    field_type: FieldType
+    label: str
+    value: int
+    input_text: str = ''
+    validator: Callable[[int], int] = field(default=lambda x: x)
+
+    def __post_init__(self):
+        if not self.input_text:
+            self.input_text = str(self.value)
+
+    def commit(self) -> None:
+        """Commit the input text to the value."""
+        try:
+            parsed = int(self.input_text.strip())
+            self.value = self.validator(parsed)
+            self.input_text = str(self.value)
+        except ValueError:
+            self.input_text = str(self.value)
+
+
 class Color:
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
@@ -78,14 +112,27 @@ class StartScreen:
         self.screen = screen
         self.default_settings = default_settings
 
-        # Current values
-        self.n_disks = default_settings.n_disks
-        self.speed = default_settings.speed
+        # Define input fields
+        self.fields: dict[FieldType, InputField] = {
+            FieldType.N_DISKS: InputField(
+                field_type=FieldType.N_DISKS,
+                label='Number of Disks (1-10):',
+                value=default_settings.n_disks,
+                validator=lambda x: max(1, min(10, x)),
+            ),
+            FieldType.SPEED: InputField(
+                field_type=FieldType.SPEED,
+                label='Speed (pixels/frame):',
+                value=default_settings.speed,
+                validator=lambda x: max(1, x),
+            ),
+        }
 
-        # Input states
-        self.active_field = 0  # 0: n_disks, 1: speed, 2: start button
+        # Field order for navigation
+        self.field_order = [FieldType.N_DISKS, FieldType.SPEED, FieldType.START_BUTTON]
 
-        self.input_texts = [str(self.n_disks), str(self.speed)]
+        # Active field and editing state
+        self.active_field: FieldType = FieldType.N_DISKS
         self.editing = False
 
         # Fonts
@@ -98,10 +145,9 @@ class StartScreen:
         # Colors
         self.bg_color = Color.WHITE
         self.text_color = Color.BLACK
-        self.active_color = Color.BLUE
+        self.active_color = Color.LIGHT_BLUE
         self.inactive_color = Color.GREY
         self.button_color = Color.GREEN
-        self.button_hover_color = Color.LIGHT_BLUE
 
     def handle_event(self, event: pygame.event.Event) -> Settings | None:
         """Handle events. Returns Settings if start is pressed, None otherwise."""
@@ -121,34 +167,37 @@ class StartScreen:
 
         # Start game or toggle edit mode
         if event.key in (pygame.K_RETURN, pygame.K_SPACE):
-            if self.active_field == 2:  # Start button
+            if self.active_field == FieldType.START_BUTTON:
                 return self._create_settings()
             self._toggle_edit_mode()
             return None
 
         # Handle text input
-        if self.active_field < 3:
+        if self.active_field in self.fields:
             if self.editing:
                 self._handle_text_input(event)
             elif event.unicode.isdigit():
-                # Start editing when typing a number
-                self.editing = True
-                self.input_texts[self.active_field] = event.unicode
+                self.editing = True  # Start editing when typing a number
+                self.fields[self.active_field].input_text = event.unicode
 
         return None
 
     def _navigate_up(self) -> None:
         """Navigate to the previous field."""
-        if self.editing and self.active_field < len(self.input_texts):
+        if self.editing and self.active_field in self.fields:
             self._commit_field()
-        self.active_field = (self.active_field - 1) % (len(self.input_texts) + 1)
+        current_index = self.field_order.index(self.active_field)
+        new_index = (current_index - 1) % len(self.field_order)
+        self.active_field = self.field_order[new_index]
         self.editing = False
 
     def _navigate_down(self) -> None:
         """Navigate to the next field."""
-        if self.editing and self.active_field < len(self.input_texts):
+        if self.editing and self.active_field in self.fields:
             self._commit_field()
-        self.active_field = (self.active_field + 1) % (len(self.input_texts) + 1)
+        current_index = self.field_order.index(self.active_field)
+        new_index = (current_index + 1) % len(self.field_order)
+        self.active_field = self.field_order[new_index]
         self.editing = False
 
     def _toggle_edit_mode(self) -> None:
@@ -161,50 +210,27 @@ class StartScreen:
 
     def _handle_text_input(self, event: pygame.event.Event) -> None:
         """Handle text input when editing a field."""
+        field = self.fields[self.active_field]
         if event.key == pygame.K_BACKSPACE:
-            if self.input_texts[self.active_field]:
-                self.input_texts[self.active_field] = self.input_texts[self.active_field][:-1]
+            if field.input_text:
+                field.input_text = field.input_text[:-1]
         elif event.unicode.isdigit():
-            self.input_texts[self.active_field] += event.unicode
+            field.input_text += event.unicode
 
     def _commit_field(self) -> None:
         """Commit the current field value and validate it."""
-        if self.active_field >= len(self.input_texts):
+        if self.active_field not in self.fields:
             return
-
-        # Get and validate input
-        input_text = self.input_texts[self.active_field].strip()
-        if not input_text:
-            # Empty input, reset to current value
-            self._reset_field_display()
-            return
-
-        try:
-            value = int(input_text)
-        except ValueError:
-            # Invalid input, reset to current value
-            self._reset_field_display()
-            return
-
-        # Apply validation and update values
-        if self.active_field == 0:  # n_disks
-            self.n_disks = max(1, min(10, value))
-            self.input_texts[0] = str(self.n_disks)
-        else:  # self.active_field == 1:  # speed
-            self.speed = max(1, value)
-            self.input_texts[1] = str(self.speed)
-
-    def _reset_field_display(self) -> None:
-        """Reset the current field display to its committed value."""
-        if self.active_field == 0:
-            self.input_texts[0] = str(self.n_disks)
-        elif self.active_field == 1:
-            self.input_texts[1] = str(self.speed)
+        self.fields[self.active_field].commit()
 
     def _create_settings(self) -> Settings:
         """Create Settings object from current values."""
         # Commit any field that's being edited
-        return Settings(n_disks=self.n_disks, speed=self.speed, animate=True)
+        if self.editing and self.active_field in self.fields:
+            self._commit_field()
+        return Settings(
+            n_disks=self.fields[FieldType.N_DISKS].value, speed=self.fields[FieldType.SPEED].value, animate=True
+        )
 
     def render(self) -> None:
         """Render the start screen."""
@@ -216,11 +242,11 @@ class StartScreen:
         # Configuration fields
         y_start = 140
         spacing = 60
-        self._render_field(0, 'Number of Disks (1-10):', self.input_texts[0], y_start)
-        self._render_field(1, 'Speed (pixels/frame):', self.input_texts[1], y_start + spacing)
+        self._render_field(FieldType.N_DISKS, y_start)
+        self._render_field(FieldType.SPEED, y_start + spacing)
 
         # Start button
-        self._render_button(2, 'Start Game', y_start + 2 * spacing + 20)
+        self._render_button(FieldType.START_BUTTON, 'Start Game', y_start + 2 * spacing + 20)
 
         # Instructions
         self._render_instructions()
@@ -233,7 +259,7 @@ class StartScreen:
         title_rect = title_text.get_rect(center=(WIDTH // 2, 40))
         self.screen.blit(title_text, title_rect)
 
-        subtitle_text = self.label_font.render('Configure Game Settings', True, self.inactive_color)
+        subtitle_text = self.label_font.render('Configure Simulation Settings', True, self.inactive_color)
         subtitle_rect = subtitle_text.get_rect(center=(WIDTH // 2, 80))
         self.screen.blit(subtitle_text, subtitle_rect)
 
@@ -246,21 +272,22 @@ class StartScreen:
 
     def _get_instruction_text(self) -> str:
         """Get the instruction text based on current state."""
-        if self.active_field == 3:
+        if self.active_field == FieldType.START_BUTTON:
             return 'Press Enter or Space to start the game'
         elif self.editing:
             return 'Type numbers, Enter to confirm, Tab/Arrow keys to navigate'
         else:
             return 'Press Enter to edit, Tab/Arrow keys to navigate, Enter on Start to begin'
 
-    def _render_field(self, index: int, label: str, value: str, y: int) -> None:
+    def _render_field(self, field_type: FieldType, y: int) -> None:
         """Render a labeled input field."""
-        is_active = self.active_field == index
+        field = self.fields[field_type]
+        is_active = self.active_field == field_type
         is_editing = is_active and self.editing
 
         # Label
         label_color = self.active_color if is_active else self.text_color
-        label_surface = self.label_font.render(label, True, label_color)
+        label_surface = self.label_font.render(field.label, True, label_color)
         label_rect = label_surface.get_rect(midright=(WIDTH // 2 - 20, y))
         self.screen.blit(label_surface, label_rect)
 
@@ -271,17 +298,17 @@ class StartScreen:
         pygame.draw.rect(self.screen, input_color, input_rect, border_width)
 
         # Input text with cursor
-        display_text = value if value else '0'
+        display_text = field.input_text if field.input_text else '0'
         if is_editing:
             display_text += '|'
         text_surface = self.input_font.render(display_text, True, self.text_color)
         text_rect = text_surface.get_rect(midleft=(input_rect.left + 5, input_rect.centery))
         self.screen.blit(text_surface, text_rect)
 
-    def _render_button(self, index: int, text: str, y: int) -> None:
+    def _render_button(self, field_type: FieldType, text: str, y: int) -> None:
         """Render a button."""
-        is_active = self.active_field == index
-        button_color = self.button_hover_color if is_active else self.button_color
+        is_active = self.active_field == field_type
+        button_color = self.active_color if is_active else self.button_color
         button_rect = pygame.Rect(WIDTH // 2 - 100, y - 20, 200, 40)
 
         pygame.draw.rect(self.screen, button_color, button_rect)
