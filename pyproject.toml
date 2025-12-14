@@ -1,6 +1,6 @@
 [project]
 name = "hanoi-viz"
-version = "0.2.5"
+version = "0.3.0"
 description = "Visualize solving the tower of Hanoi problem"
 readme = "README.md"
 license = { text = "MIT" }
