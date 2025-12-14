@@ -39,6 +39,10 @@ class QuitGame(Exception):
     """Raised to stop the game loop cleanly when the window is closed."""
 
 
+class ReturnToStartScreen(Exception):
+    """Raised to return to the start screen from the game."""
+
+
 class Color:
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
@@ -67,10 +71,259 @@ class Color:
     ]
 
 
+class StartScreen:
+    """Start screen for configuring game parameters before starting."""
+    
+    def __init__(self, screen: pygame.Surface, default_settings: Settings):
+        self.screen = screen
+        self.default_settings = default_settings
+        
+        # Current values
+        self.n_disks = default_settings.n_disks
+        self.speed = default_settings.speed
+        self.fps = default_settings.fps
+        
+        # Input states
+        self.active_field = 0  # 0: n_disks, 1: speed, 2: fps, 3: start button
+        self.input_texts = [str(self.n_disks), str(self.speed), str(self.fps)]
+        self.editing = False
+        
+        # Fonts
+        pygame.font.init()
+        self.title_font = pygame.font.Font(None, 48)
+        self.label_font = pygame.font.Font(None, 32)
+        self.input_font = pygame.font.Font(None, 28)
+        self.button_font = pygame.font.Font(None, 36)
+        
+        # Colors
+        self.bg_color = Color.WHITE
+        self.text_color = Color.BLACK
+        self.active_color = Color.BLUE
+        self.inactive_color = Color.GREY
+        self.button_color = Color.GREEN
+        self.button_hover_color = Color.LIGHT_BLUE
+        
+    def handle_event(self, event: pygame.event.Event) -> Settings | None:
+        """Handle events. Returns Settings if start is pressed, None otherwise."""
+        if event.type != pygame.KEYDOWN:
+            return None
+        
+        if event.key == pygame.K_ESCAPE:
+            raise QuitGame
+        
+        if event.key == pygame.K_UP or (event.key == pygame.K_TAB and (event.mod & pygame.KMOD_SHIFT)):
+            self._navigate_up()
+            return None
+        
+        if event.key in (pygame.K_TAB, pygame.K_DOWN):
+            self._navigate_down()
+            return None
+        
+        # Start game or toggle edit mode
+        if event.key in (pygame.K_RETURN, pygame.K_SPACE):
+            if self.active_field == 3:  # Start button
+                return self._create_settings()
+            self._toggle_edit_mode()
+            return None
+        
+        # Handle text input
+        if self.active_field < 3:
+            # self._handle_text_input(event)
+            if self.editing:
+                self._handle_text_input(event)
+            elif event.unicode.isdigit():
+                # Start editing when typing a number
+                self.editing = True
+                self.input_texts[self.active_field] = event.unicode
+        
+        return None
+    
+    def _navigate_up(self) -> None:
+        """Navigate to the previous field."""
+        if self.editing and self.active_field < 3:
+            self._commit_field()
+        self.active_field = (self.active_field - 1) % 4
+        self.editing = False
+    
+    def _navigate_down(self) -> None:
+        """Navigate to the next field."""
+        if self.editing and self.active_field < 3:
+            self._commit_field()
+        self.active_field = (self.active_field + 1) % 4
+        self.editing = False
+    
+    def _toggle_edit_mode(self) -> None:
+        """Toggle edit mode for the current field."""
+        if self.editing:
+            self._commit_field()
+            self.editing = False
+        else:
+            self.editing = True
+    
+    def _handle_text_input(self, event: pygame.event.Event) -> None:
+        """Handle text input when editing a field."""
+        if event.key == pygame.K_BACKSPACE:
+            if self.input_texts[self.active_field]:
+                self.input_texts[self.active_field] = self.input_texts[self.active_field][:-1]
+        elif event.unicode.isdigit():
+            self.input_texts[self.active_field] += event.unicode
+    
+    def _commit_field(self) -> None:
+        """Commit the current field value and validate it."""
+        if self.active_field >= len(self.input_texts):
+            return
+        
+        # Get and validate input
+        input_text = self.input_texts[self.active_field].strip()
+        if not input_text:
+            # Empty input, reset to current value
+            self._reset_field_display()
+            return
+        
+        try:
+            value = int(input_text)
+        except ValueError:
+            # Invalid input, reset to current value
+            self._reset_field_display()
+            return
+
+        # Apply validation and update values
+        if self.active_field == 0:  # n_disks
+            self.n_disks = max(1, min(10, value))
+            self.input_texts[0] = str(self.n_disks)
+        elif self.active_field == 1:  # speed
+            self.speed = max(1, value)
+            self.input_texts[1] = str(self.speed)
+        else:  # fps
+            self.fps = max(1, min(240, value))
+            self.input_texts[2] = str(self.fps)
+    
+    def _reset_field_display(self) -> None:
+        """Reset the current field display to its committed value."""
+        if self.active_field == 0:
+            self.input_texts[0] = str(self.n_disks)
+        elif self.active_field == 1:
+            self.input_texts[1] = str(self.speed)
+        elif self.active_field == 2:
+            self.input_texts[2] = str(self.fps)
+
+    def _create_settings(self) -> Settings:
+        """Create Settings object from current values."""
+        # Commit any field that's being edited
+        return Settings(
+            n_disks=self.n_disks,
+            speed=self.speed,
+            fps=self.fps,
+            animate=True
+        )
+    
+    def render(self) -> None:
+        """Render the start screen."""
+        self.screen.fill(self.bg_color)
+        
+        # Title
+        self._render_title()
+        
+        # Configuration fields
+        y_start = 160
+        spacing = 60
+        self._render_field(0, "Number of Disks (1-10):", self.input_texts[0], y_start)
+        self._render_field(1, "Speed (pixels/frame):", self.input_texts[1], y_start + spacing)
+        self._render_field(2, "FPS (1-240):", self.input_texts[2], y_start + 2 * spacing)
+        
+        # Start button
+        self._render_button(3, "Start Game", y_start + 3 * spacing + 20)
+        
+        # Instructions
+        self._render_instructions()
+        
+        pygame.display.flip()
+    
+    def _render_title(self) -> None:
+        """Render the title and subtitle."""
+        title_text = self.title_font.render("Towers of Hanoi", True, self.text_color)
+        title_rect = title_text.get_rect(center=(WIDTH // 2, 60))
+        self.screen.blit(title_text, title_rect)
+        
+        subtitle_text = self.label_font.render("Configure Game Settings", True, self.inactive_color)
+        subtitle_rect = subtitle_text.get_rect(center=(WIDTH // 2, 100))
+        self.screen.blit(subtitle_text, subtitle_rect)
+    
+    def _render_instructions(self) -> None:
+        """Render the instruction text."""
+        inst_text = self._get_instruction_text()
+        inst_surface = self.label_font.render(inst_text, True, self.inactive_color)
+        inst_rect = inst_surface.get_rect(center=(WIDTH // 2, HEIGHT - 20))
+        self.screen.blit(inst_surface, inst_rect)
+    
+    def _get_instruction_text(self) -> str:
+        """Get the instruction text based on current state."""
+        if self.active_field == 3:
+            return "Press Enter or Space to start the game"
+        elif self.editing:
+            return "Type numbers, Enter to confirm, Tab/Arrow keys to navigate"
+        else:
+            return "Press Enter to edit, Tab/Arrow keys to navigate, Enter on Start to begin"
+    
+    def _render_field(self, index: int, label: str, value: str, y: int) -> None:
+        """Render a labeled input field."""
+        is_active = self.active_field == index
+        is_editing = is_active and self.editing
+        
+        # Label
+        label_color = self.active_color if is_active else self.text_color
+        label_surface = self.label_font.render(label, True, label_color)
+        label_rect = label_surface.get_rect(midright=(WIDTH // 2 - 20, y))
+        self.screen.blit(label_surface, label_rect)
+        
+        # Input box
+        input_color = self.active_color if is_active else self.inactive_color
+        input_rect = pygame.Rect(WIDTH // 2 + 20, y - 15, 100, 30)
+        border_width = 3 if is_editing else 2
+        pygame.draw.rect(self.screen, input_color, input_rect, border_width)
+        
+        # Input text with cursor
+        display_text = value if value else "0"
+        if is_editing:
+            display_text += "|"
+        text_surface = self.input_font.render(display_text, True, self.text_color)
+        text_rect = text_surface.get_rect(midleft=(input_rect.left + 5, input_rect.centery))
+        self.screen.blit(text_surface, text_rect)
+    
+    def _render_button(self, index: int, text: str, y: int) -> None:
+        """Render a button."""
+        is_active = self.active_field == index
+        button_color = self.button_hover_color if is_active else self.button_color
+        button_rect = pygame.Rect(WIDTH // 2 - 100, y - 20, 200, 40)
+        
+        pygame.draw.rect(self.screen, button_color, button_rect)
+        pygame.draw.rect(self.screen, self.text_color, button_rect, 2)
+        
+        text_surface = self.button_font.render(text, True, self.text_color)
+        text_rect = text_surface.get_rect(center=button_rect.center)
+        self.screen.blit(text_surface, text_rect)
+    
+    def run(self) -> Settings:
+        """Run the start screen loop. Returns Settings when user starts the game."""
+        clock = pygame.time.Clock()
+        
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    raise QuitGame
+                
+                settings = self.handle_event(event)
+                if settings is not None:
+                    return settings
+            
+            self.render()
+            clock.tick(60)
+
+
 class Game:
     def __init__(self, settings: Settings):
         self.settings = settings
-        pygame.init()
+        # pygame.init() is called in run_pygame, so we don't need to call it here
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.board = pygame.Rect(BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT)
         self.pegs = self.init_pegs()
@@ -86,7 +339,6 @@ class Game:
         self.finished = False
         self.paused = False
         self.step_once = False
-        self.restart_requested = False
 
         # Initialize font for text display
         pygame.font.init()
@@ -111,28 +363,6 @@ class Game:
             discs.append(disc)
         return discs
 
-    def reset_game(self):
-        """Reset the game to its initial state."""
-        # Reset disc positions to peg 1
-        for i, disc in enumerate(self.disks):
-            disc.centerx = self.pegs[0].centerx
-            if i == 0:
-                disc.bottom = self.board.top
-            else:
-                disc.bottom = self.disks[i - 1].top
-
-        # Reset peg stacks
-        self.peg_stacks.clear()
-        self.peg_stacks[1].extend(self.disks)
-
-        # Reset game state
-        self.paused = False
-        self.step_once = False
-        self.restart_requested = False
-        self.finished = False
-        self.current_move_text = None
-        self._update_caption()
-
     def handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -152,7 +382,7 @@ class Game:
                         self.paused = False
                     self._update_caption()
                 if event.key == pygame.K_r:
-                    self.restart_requested = True
+                    raise ReturnToStartScreen
 
     def _update_caption(self):
         caption = 'Towers of Hanoi'
@@ -164,7 +394,7 @@ class Game:
         pygame.display.set_caption(caption)
 
     def wait_if_paused(self):
-        while self.paused and not self.restart_requested:
+        while self.paused:
             self.handle_events()
             self.refresh()
 
@@ -176,11 +406,6 @@ class Game:
 
             while True:
                 self.handle_events()
-
-                # Check for restart request
-                if self.restart_requested:
-                    self.reset_game()
-                    break  # Break inner loop to restart
 
                 # If paused, wait (unless step_once is triggered, which will unpause)
                 if self.paused and not self.step_once:
@@ -204,18 +429,12 @@ class Game:
                         self.step_once = False
                 except StopIteration:
                     self.finished = True
-                    # All moves completed
                     completion_text = f'{self.settings.n_disks} discs solved in {i} moves.'
                     console.print(f'\n[green]{completion_text}')
                     self.current_move_text = completion_text
-                    # Wait for restart or quit
-                    while True:
+                    while True:  # Wait for restart or quit
                         self.handle_events()
-                        if self.restart_requested:
-                            self.reset_game()
-                            break  # Break to restart outer loop
                         self.refresh()
-                    break  # Break inner loop to restart
 
     def refresh(self):
         self.screen.fill(Color.WHITE)
@@ -234,7 +453,7 @@ class Game:
             self.screen.blit(text_surface, text_rect)
 
         pygame.display.flip()
-        self.clock.tick(FPS)
+        self.clock.tick(self.settings.fps)
 
     def _step_towards(
         self,
@@ -272,11 +491,9 @@ class Game:
         bottom: int | None = None,
     ):
         done = False
-        while not done and not self.restart_requested:
+        while not done:
             self.handle_events()
             self.wait_if_paused()
-            if self.restart_requested:
-                break
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
             self.refresh()
 
@@ -298,8 +515,24 @@ class Game:
 
 def run_pygame(settings: Settings):
     try:
-        game = Game(settings)
-        game.run()
+        pygame.init()
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        current_settings = settings
+        
+        # Main loop: start screen -> game -> start screen (on restart)
+        while True:
+            # Show start screen
+            start_screen = StartScreen(screen, current_settings)
+            final_settings = start_screen.run()
+            current_settings = final_settings
+            
+            # Create game with final settings (pygame already initialized)
+            game = Game(final_settings)
+            try:
+                game.run()
+            except ReturnToStartScreen:
+                # Return to start screen with current settings
+                continue
     except QuitGame:
         console.print('[blue]quitting game...')
     except KeyboardInterrupt:
