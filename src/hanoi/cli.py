@@ -12,7 +12,7 @@ console = Console()
 err_console = Console(stderr=True)
 
 
-@dataclass(frozen=True)
+@dataclass
 class Settings:
     n_disks: int
     speed: int

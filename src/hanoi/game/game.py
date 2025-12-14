@@ -87,19 +87,27 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_ESCAPE, pygame.K_q):
                     raise QuitGame
+                if event.key == pygame.K_r:
+                    raise ReturnToStartScreen
                 if event.key in (pygame.K_SPACE, pygame.K_p):
                     self.paused = not self.paused
                     if not self.paused:
                         # Resuming from pause - exit step mode to allow continuous running
                         self.step_once = False
                     self._update_caption()
-                if event.key in (pygame.K_RIGHT, pygame.K_n):
+                elif event.key in (pygame.K_RIGHT, pygame.K_n):
                     self.step_once = True
                     if self.paused:
                         self.paused = False
                     self._update_caption()
-                if event.key == pygame.K_r:
-                    raise ReturnToStartScreen
+                elif event.key == pygame.K_f:
+                    self.settings.speed += 10
+                    console.print(f'speed increased to: {self.settings.speed}')
+                elif event.key == pygame.K_s:
+                    self.settings.speed -= 10
+                    if self.settings.speed < 10:
+                        self.settings.speed = 10
+                    console.print(f'speed decreased to: {self.settings.speed}')
 
     def _update_caption(self) -> None:
         """Update the window caption based on game state."""
