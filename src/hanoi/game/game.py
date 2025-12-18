@@ -213,12 +213,14 @@ class Game:
         for i, disc in enumerate(self.disks):
             pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
 
+        help_surface = self.font.render('?', True, Color.GREY)
+        help_rect = help_surface.get_rect(centerx=WIDTH - 20, centery=HEIGHT - 20)
+        self.screen.blit(help_surface, help_rect)
+
         # Display current move text
         if self.current_move_text:
             text_surface = self.font.render(self.current_move_text, True, Color.BLACK)
-            text_rect = text_surface.get_rect()
-            text_rect.centerx = WIDTH // 2
-            text_rect.centery = HEIGHT // 5
+            text_rect = text_surface.get_rect(centerx=WIDTH // 2, centery=HEIGHT // 5)
             self.screen.blit(text_surface, text_rect)
 
         # Display help overlay if needed
