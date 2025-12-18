@@ -303,6 +303,30 @@ class Game:
         pygame.draw.rect(self.screen, Color.WHITE, help_box)
         pygame.draw.rect(self.screen, Color.BLACK, help_box, 3)
 
+        # Render title
+        title_text = self.help_title_font.render('Keyboard Controls', True, Color.BLACK)
+        title_rect = title_text.get_rect(center=(WIDTH // 2, box_y + 30))
+        self.screen.blit(title_text, title_rect)
+
+        # Render keybindings
+        y_offset = box_y + 70
+        for key, description in keybindings:
+            # Render key
+            key_text = self.help_font.render(key, True, Color.BLUE)
+            key_rect = key_text.get_rect(left=box_x + padding, centery=y_offset)
+            self.screen.blit(key_text, key_rect)
+
+            # Render description
+            desc_text = self.help_font.render(description, True, Color.BLACK)
+            desc_rect = desc_text.get_rect(left=box_x + padding + 145, centery=y_offset)
+            self.screen.blit(desc_text, desc_rect)
+
+            y_offset += line_height
+
+        # Render close instruction
+        close_text = self.font.render('Press ? or ESC to close', True, Color.GREY)
+        close_rect = close_text.get_rect(center=(WIDTH // 2, box_y + box_height - 25))
+        self.screen.blit(close_text, close_rect)
 
     def move_disc(self, from_peg: int, to_peg: int) -> None:
         """Move a disc from one peg to another."""
