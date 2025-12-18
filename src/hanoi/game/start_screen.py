@@ -96,7 +96,7 @@ class StartScreen:
         if event.type != pygame.KEYDOWN:
             return None
 
-        if event.key == pygame.K_ESCAPE:
+        if event.key in (pygame.K_ESCAPE, pygame.K_q):
             raise QuitGame
 
         if event.key == pygame.K_UP or (event.key == pygame.K_TAB and (event.mod & pygame.KMOD_SHIFT)):

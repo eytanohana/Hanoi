@@ -53,10 +53,13 @@ class Game:
         self.finished = False
         self.paused = False
         self.step_once = False
+        self.show_help = False
 
         # Initialize font for text display
         pygame.font.init()
         self.font = pygame.font.Font(None, 24)
+        self.help_title_font = pygame.font.Font(None, 36)
+        self.help_font = pygame.font.Font(None, 28)
         self.current_move_text = None
 
         self._update_caption()
@@ -85,6 +88,29 @@ class Game:
             if event.type == pygame.QUIT:
                 raise QuitGame
             if event.type == pygame.KEYDOWN:
+                # If help is showing, only allow closing it or quitting
+                if self.show_help:
+                    if event.key == pygame.K_ESCAPE:
+                        # ESC closes help
+                        self.show_help = False
+                    elif event.key == pygame.K_q:
+                        # Q quits (even from help screen)
+                        raise QuitGame
+                    elif event.unicode == '?':
+                        # "?" also closes help
+                        self.show_help = False
+                    continue
+
+                # Handle help screen toggle
+                if event.unicode == '?':
+                    self.show_help = not self.show_help
+                    if self.show_help and not self.paused and not self.finished:
+                        # Pause the game when showing help (if game is running)
+                        self.paused = True
+                        self._update_caption()
+                    continue
+
+                # Normal game controls (only when help is not showing)
                 if event.key in (pygame.K_ESCAPE, pygame.K_q):
                     raise QuitGame
                 if event.key == pygame.K_r:
@@ -187,13 +213,19 @@ class Game:
         for i, disc in enumerate(self.disks):
             pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
 
+        help_surface = self.font.render('?', True, Color.GREY)
+        help_rect = help_surface.get_rect(centerx=WIDTH - 20, centery=HEIGHT - 20)
+        self.screen.blit(help_surface, help_rect)
+
         # Display current move text
         if self.current_move_text:
             text_surface = self.font.render(self.current_move_text, True, Color.BLACK)
-            text_rect = text_surface.get_rect()
-            text_rect.centerx = WIDTH // 2
-            text_rect.centery = HEIGHT // 5
+            text_rect = text_surface.get_rect(centerx=WIDTH // 2, centery=HEIGHT // 5)
             self.screen.blit(text_surface, text_rect)
+
+        # Display help overlay if needed
+        if self.show_help:
+            self._render_help()
 
         pygame.display.flip()
         self.clock.tick(FPS)
@@ -241,6 +273,62 @@ class Game:
             self.wait_if_paused()
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
             self.refresh()
+
+    def _render_help(self) -> None:
+        # Create a semi-transparent overlay surface
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.set_alpha(200)  # Semi-transparent (0-255, higher = more opaque)
+        overlay.fill(Color.BLACK)
+        self.screen.blit(overlay, (0, 0))
+
+        # Define keybindings to display
+        keybindings = [
+            ('?', 'Show/hide help'),
+            ('esc / q', 'Quit game'),
+            ('r', 'Return to start screen'),
+            ('space / p', 'Pause/unpause'),
+            ('right / n', 'Step once'),
+            ('f', 'Increase speed'),
+            ('s', 'Decrease speed'),
+        ]
+
+        # Calculate help box dimensions
+        padding = 40
+        line_height = 30
+        box_width = 400
+        box_height = len(keybindings) * line_height + padding * 2 + 60  # Extra space for title
+        box_x = (WIDTH - box_width) // 2
+        box_y = (HEIGHT - box_height) // 2
+
+        # Draw help box background
+        help_box = pygame.Rect(box_x, box_y, box_width, box_height)
+        pygame.draw.rect(self.screen, Color.WHITE, help_box)
+        pygame.draw.rect(self.screen, Color.BLACK, help_box, 3)
+
+        # Render title
+        title_text = self.help_title_font.render('Keyboard Controls', True, Color.BLACK)
+        title_rect = title_text.get_rect(center=(WIDTH // 2, box_y + 30))
+        self.screen.blit(title_text, title_rect)
+
+        # Render keybindings
+        y_offset = box_y + 70
+        for key, description in keybindings:
+            # Render key
+            key_text = self.help_font.render(key, True, Color.BLUE)
+            key_rect = key_text.get_rect(left=box_x + padding, centery=y_offset)
+            self.screen.blit(key_text, key_rect)
+
+            # Render description
+            desc_text = self.help_font.render(description, True, Color.BLACK)
+            desc_rect = desc_text.get_rect(left=box_x + padding + 145, centery=y_offset)
+            self.screen.blit(desc_text, desc_rect)
+
+            y_offset += line_height
+
+        # Render close instruction
+        close_text = self.font.render('Press ? or ESC to close', True, Color.GREY)
+        close_rect = close_text.get_rect(center=(WIDTH // 2, box_y + box_height - 25))
+        self.screen.blit(close_text, close_rect)
 
     def move_disc(self, from_peg: int, to_peg: int) -> None:
         """Move a disc from one peg to another."""
