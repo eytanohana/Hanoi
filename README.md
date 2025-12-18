@@ -64,10 +64,13 @@ uv run hanoi-viz [n_disks] [--speed SPEED]
 ```
 
 ### Arguments
+``` bash
+uv run hanoi-viz --help
+```
 
 | Argument  | Description                                     | Default |
 |-----------|-------------------------------------------------|---------|
-| `n_disks` | Number of disks (1–10)                          | `3`     |
+| `n_disks` | Number of disks (1–15)                          | `3`     |
 | `--speed` | Pixels moved per frame (animation speed, >= 10) | `15`    |
 
 ### Examples
