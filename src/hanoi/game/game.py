@@ -273,7 +273,36 @@ class Game:
             self.refresh()
 
     def _render_help(self) -> None:
-        ...
+        # Create a semi-transparent overlay surface
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.set_alpha(200)  # Semi-transparent (0-255, higher = more opaque)
+        overlay.fill(Color.BLACK)
+        self.screen.blit(overlay, (0, 0))
+
+        # Define keybindings to display
+        keybindings = [
+            ('?', 'Show/hide help'),
+            ('esc / q', 'Quit game'),
+            ('r', 'Return to start screen'),
+            ('space / p', 'Pause/unpause'),
+            ('right / n', 'Step once'),
+            ('f', 'Increase speed'),
+            ('s', 'Decrease speed'),
+        ]
+
+        # Calculate help box dimensions
+        padding = 40
+        line_height = 30
+        box_width = 400
+        box_height = len(keybindings) * line_height + padding * 2 + 60  # Extra space for title
+        box_x = (WIDTH - box_width) // 2
+        box_y = (HEIGHT - box_height) // 2
+
+        # Draw help box background
+        help_box = pygame.Rect(box_x, box_y, box_width, box_height)
+        pygame.draw.rect(self.screen, Color.WHITE, help_box)
+        pygame.draw.rect(self.screen, Color.BLACK, help_box, 3)
+
 
     def move_disc(self, from_peg: int, to_peg: int) -> None:
         """Move a disc from one peg to another."""
