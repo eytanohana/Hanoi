@@ -53,10 +53,13 @@ class Game:
         self.finished = False
         self.paused = False
         self.step_once = False
+        self.show_help = False
 
         # Initialize font for text display
         pygame.font.init()
         self.font = pygame.font.Font(None, 24)
+        self.help_title_font = pygame.font.Font(None, 36)
+        self.help_font = pygame.font.Font(None, 28)
         self.current_move_text = None
 
         self._update_caption()
@@ -85,6 +88,29 @@ class Game:
             if event.type == pygame.QUIT:
                 raise QuitGame
             if event.type == pygame.KEYDOWN:
+                # If help is showing, only allow closing it or quitting
+                if self.show_help:
+                    if event.key == pygame.K_ESCAPE:
+                        # ESC closes help
+                        self.show_help = False
+                    elif event.key == pygame.K_q:
+                        # Q quits (even from help screen)
+                        raise QuitGame
+                    elif event.unicode == '?':
+                        # "?" also closes help
+                        self.show_help = False
+                    continue
+
+                # Handle help screen toggle
+                if event.unicode == '?':
+                    self.show_help = not self.show_help
+                    if self.show_help and not self.paused and not self.finished:
+                        # Pause the game when showing help (if game is running)
+                        self.paused = True
+                        self._update_caption()
+                    continue
+
+                # Normal game controls (only when help is not showing)
                 if event.key in (pygame.K_ESCAPE, pygame.K_q):
                     raise QuitGame
                 if event.key == pygame.K_r:
@@ -195,6 +221,10 @@ class Game:
             text_rect.centery = HEIGHT // 5
             self.screen.blit(text_surface, text_rect)
 
+        # Display help overlay if needed
+        if self.show_help:
+            self._render_help()
+
         pygame.display.flip()
         self.clock.tick(FPS)
 
@@ -241,6 +271,9 @@ class Game:
             self.wait_if_paused()
             done = self._step_towards(rect, x=x, y=y, bottom=bottom)
             self.refresh()
+
+    def _render_help(self) -> None:
+        ...
 
     def move_disc(self, from_peg: int, to_peg: int) -> None:
         """Move a disc from one peg to another."""
