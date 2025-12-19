@@ -191,8 +191,7 @@ class Game:
                     )
                     console.print(move_text)
                     self.current_move_text = move_text
-                    self.move_disc(from_, to)
-                    self.progress_bar.width = self._calculate_progress(i)
+                    self.move_disc(i, from_, to)
 
                     # If in step mode, pause after completing the move
                     if self.step_once:
@@ -224,7 +223,7 @@ class Game:
             pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
 
         help_surface = self.font.render('?', True, Color.GREY)
-        help_rect = help_surface.get_rect(centerx=WIDTH - 20, centery=HEIGHT - 20)
+        help_rect = help_surface.get_rect(centerx=WIDTH - 20, centery=20)
         self.screen.blit(help_surface, help_rect)
 
         # Display current move text
@@ -340,20 +339,25 @@ class Game:
         close_rect = close_text.get_rect(center=(WIDTH // 2, box_y + box_height - 25))
         self.screen.blit(close_text, close_rect)
 
-    def move_disc(self, from_peg: int, to_peg: int) -> None:
+    def move_disc(self, step: int, from_peg: int, to_peg: int) -> None:
         """Move a disc from one peg to another."""
         disc = self.peg_stacks[from_peg].pop()
-        self._animate_to(disc, y=LIFT_Y)
 
+        final_width = self._calculate_progress(step)
+        step_size = (final_width - self.progress_bar.width) // 3
+
+        # raise disc
+        self._animate_to(disc, y=LIFT_Y)
+        self.progress_bar.width += step_size
+
+        # move disc to next peg
         to_x = self.pegs[to_peg - 1].centerx
         self._animate_to(disc, x=to_x)
+        self.progress_bar.width += step_size
 
-        try:
-            top_disk = self.peg_stacks[to_peg][-1]
-            to_y = top_disk.top
-        except IndexError:
-            to_y = self.board.top
+        to_y = self.peg_stacks[to_peg][-1].top if self.peg_stacks[to_peg] else self.board.top
         self._animate_to(disc, bottom=to_y)
+        self.progress_bar.width = final_width
         self.peg_stacks[to_peg].append(disc)
 
     def _calculate_progress(self, step: int) -> int:
