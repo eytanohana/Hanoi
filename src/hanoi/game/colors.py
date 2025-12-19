@@ -1,4 +1,5 @@
 """Color definitions for the game."""
+
 from typing import List, Tuple
 
 
