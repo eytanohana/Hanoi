@@ -43,6 +43,10 @@ class Game:
         self.pegs = self._init_pegs()
         self.disks = self._init_discs(self.settings.n_disks)
 
+        left, width, top = self.board.left - 20, self.board.width + 40, self.board.bottom + 10
+        self.progress_border = pygame.Rect(left, top, width, 15)
+        self.progress_bar = pygame.Rect(left, top, 0, 15)
+
         self.peg_stacks = defaultdict(list)
         self.peg_stacks[1].extend(self.disks)
 
@@ -208,6 +212,10 @@ class Game:
         """Refresh the game display."""
         self.screen.fill(Color.WHITE)
         pygame.draw.rect(self.screen, Color.BLACK, self.board)
+
+        pygame.draw.rect(self.screen, Color.BLACK, self.progress_border, 2)
+        pygame.draw.rect(self.screen, Color.GREEN, self.progress_bar)
+
         for peg in self.pegs:
             pygame.draw.rect(self.screen, Color.BLACK, peg)
         for i, disc in enumerate(self.disks):
