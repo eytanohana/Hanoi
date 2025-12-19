@@ -50,7 +50,8 @@ class Game:
         self.peg_stacks = defaultdict(list)
         self.peg_stacks[1].extend(self.disks)
 
-        self.print_spaces = len(str(2**self.settings.n_disks - 1))
+        self.total_moves = 2**self.settings.n_disks - 1
+        self.print_spaces = len(str(self.total_moves))
         self.print_disk_spaces = len(str(self.settings.n_disks))
         self.clock = pygame.time.Clock()
 
@@ -191,6 +192,7 @@ class Game:
                     console.print(move_text)
                     self.current_move_text = move_text
                     self.move_disc(from_, to)
+                    self.progress_bar.width = self._calculate_progress(i)
 
                     # If in step mode, pause after completing the move
                     if self.step_once:
@@ -353,3 +355,8 @@ class Game:
             to_y = self.board.top
         self._animate_to(disc, bottom=to_y)
         self.peg_stacks[to_peg].append(disc)
+
+    def _calculate_progress(self, step: int) -> int:
+        percent_complete = step / self.total_moves
+        progress_width = round(percent_complete * self.progress_border.width)
+        return progress_width
