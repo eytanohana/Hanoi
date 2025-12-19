@@ -42,9 +42,9 @@ def parse_args(argv: list[str] | None = None) -> Settings:
 
 def run_headless(settings: Settings) -> None:
     width_moves = len(str(2**settings.n_disks - 1))
-    width_disc = len(str(settings.n_disks))
-    for i, (disc, from_, to) in enumerate(hanoi(settings.n_disks), 1):
-        console.print(f'{i:{width_moves}}: Move disc {disc:{width_disc}} from peg {from_} to {to}.')
+    width_disk = len(str(settings.n_disks))
+    for i, (disk, from_, to) in enumerate(hanoi(settings.n_disks), 1):
+        console.print(f'{i:{width_moves}}: Move disk {disk:{width_disk}} from peg {from_} to {to}.')
 
 
 def main(argv: list[str] | None = None) -> None:

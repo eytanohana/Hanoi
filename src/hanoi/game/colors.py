@@ -1,4 +1,5 @@
 """Color definitions for the game."""
+from typing import Tuple, List
 
 
 class Color:
@@ -17,7 +18,7 @@ class Color:
     PURPLE = (153, 13, 191)
     LIGHT_PURPLE = (207, 99, 190)
 
-    DISC_COLORS: list = [
+    DISK_COLORS: List[Tuple[int, int, int]] = [
         RED,
         ORANGE,
         YELLOW,

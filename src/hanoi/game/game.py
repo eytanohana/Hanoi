@@ -17,8 +17,8 @@ from .constants import (
     BOARD_POS_TOP,
     BOARD_WIDTH,
     CAPTION,
-    DISC_HEIGHT,
-    DISC_WIDTH,
+    DISK_HEIGHT,
+    DISK_WIDTH,
     FPS,
     HEIGHT,
     LIFT_Y,
@@ -41,7 +41,7 @@ class Game:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.board = pygame.Rect(BOARD_POS_LEFT, BOARD_POS_TOP, BOARD_WIDTH, BOARD_HEIGHT)
         self.pegs = self._init_pegs()
-        self.disks = self._init_discs(self.settings.n_disks)
+        self.disks = self._init_disks(self.settings.n_disks)
 
         left, width, top = self.board.left - 20, self.board.width + 40, self.board.bottom + 10
         self.progress_border = pygame.Rect(left, top, width, 15)
@@ -76,16 +76,16 @@ class Game:
             for peg_num in range(1, 4)
         ]
 
-    def _init_discs(self, n_discs: int) -> list[pygame.Rect]:
-        """Initialize the discs."""
-        discs = []
-        for i in range(n_discs, 0, -1):
-            width = DISC_WIDTH if i == n_discs else int(discs[-1].width * 0.9)
-            disc = pygame.Rect(0, 0, width, DISC_HEIGHT)
-            disc.centerx = self.pegs[0].centerx
-            disc.bottom = self.board.top if i == n_discs else discs[-1].top
-            discs.append(disc)
-        return discs
+    def _init_disks(self, n_disks: int) -> list[pygame.Rect]:
+        """Initialize the disks."""
+        disks = []
+        for i in range(n_disks, 0, -1):
+            width = DISK_WIDTH if i == n_disks else int(disks[-1].width * 0.9)
+            disk = pygame.Rect(0, 0, width, DISK_HEIGHT)
+            disk.centerx = self.pegs[0].centerx
+            disk.bottom = self.board.top if i == n_disks else disks[-1].top
+            disks.append(disk)
+        return disks
 
     def handle_events(self) -> None:
         """Handle pygame events."""
@@ -185,13 +185,13 @@ class Game:
 
                 # Execute next move
                 try:
-                    i, (disc, from_, to) = next(move_iterator)
+                    i, (disk, from_, to) = next(move_iterator)
                     move_text = (
-                        f'{i:{self.print_spaces}}: Move disc {disc:{self.print_disk_spaces}} from peg {from_} to {to}.'
+                        f'{i:{self.print_spaces}}: Move disk {disk:{self.print_disk_spaces}} from peg {from_} to {to}.'
                     )
                     console.print(move_text)
                     self.current_move_text = move_text
-                    self.move_disc(i, from_, to)
+                    self.move_disk(i, from_, to)
 
                     # If in step mode, pause after completing the move
                     if self.step_once:
@@ -201,7 +201,7 @@ class Game:
                 except StopIteration:
                     self.finished = True
                     suffix = 's' if self.settings.n_disks > 1 else ''
-                    completion_text = f'{self.settings.n_disks} disc{suffix} solved in {i} move{suffix}.'
+                    completion_text = f'{self.settings.n_disks} disk{suffix} solved in {i} move{suffix}.'
                     console.print(f'\n[green]{completion_text}')
                     self.current_move_text = completion_text
                     self._update_caption()
@@ -219,8 +219,8 @@ class Game:
 
         for peg in self.pegs:
             pygame.draw.rect(self.screen, Color.BLACK, peg)
-        for i, disc in enumerate(self.disks):
-            pygame.draw.rect(self.screen, Color.DISC_COLORS[i % len(Color.DISC_COLORS)], disc)
+        for i, disk in enumerate(self.disks):
+            pygame.draw.rect(self.screen, Color.DISK_COLORS[i % len(Color.DISK_COLORS)], disk)
 
         help_surface = self.font.render('?', True, Color.GREY)
         help_rect = help_surface.get_rect(centerx=WIDTH - 20, centery=20)
@@ -339,26 +339,26 @@ class Game:
         close_rect = close_text.get_rect(center=(WIDTH // 2, box_y + box_height - 25))
         self.screen.blit(close_text, close_rect)
 
-    def move_disc(self, step: int, from_peg: int, to_peg: int) -> None:
-        """Move a disc from one peg to another."""
-        disc = self.peg_stacks[from_peg].pop()
+    def move_disk(self, step: int, from_peg: int, to_peg: int) -> None:
+        """Move a disk from one peg to another."""
+        disk = self.peg_stacks[from_peg].pop()
 
         final_width = self._calculate_progress(step)
         step_size = (final_width - self.progress_bar.width) // 3
 
-        # raise disc
-        self._animate_to(disc, y=LIFT_Y)
+        # raise disk
+        self._animate_to(disk, y=LIFT_Y)
         self.progress_bar.width += step_size
 
-        # move disc to next peg
+        # move disk to next peg
         to_x = self.pegs[to_peg - 1].centerx
-        self._animate_to(disc, x=to_x)
+        self._animate_to(disk, x=to_x)
         self.progress_bar.width += step_size
 
         to_y = self.peg_stacks[to_peg][-1].top if self.peg_stacks[to_peg] else self.board.top
-        self._animate_to(disc, bottom=to_y)
+        self._animate_to(disk, bottom=to_y)
         self.progress_bar.width = final_width
-        self.peg_stacks[to_peg].append(disc)
+        self.peg_stacks[to_peg].append(disk)
 
     def _calculate_progress(self, step: int) -> int:
         percent_complete = step / self.total_moves

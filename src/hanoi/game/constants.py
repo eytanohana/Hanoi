@@ -19,9 +19,9 @@ BOARD_HEIGHT: Final[int] = int(0.02 * HEIGHT)
 PEG_HEIGHT: Final[int] = HEIGHT // 2
 PEG_WIDTH: Final[int] = 6
 
-# Disc dimensions
-DISC_HEIGHT: Final[int] = 10
-DISC_WIDTH: Final[int] = 120
+# Disk dimensions
+DISK_HEIGHT: Final[int] = 10
+DISK_WIDTH: Final[int] = 120
 
 # Animation
 LIFT_Y: Final[int] = HEIGHT // 3
