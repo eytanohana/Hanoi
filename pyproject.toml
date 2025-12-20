@@ -10,6 +10,34 @@ dependencies = [
     "rich>=14.2.0",
 ]
 
+authors = [
+    { name = "Eytan Ohana" }
+]
+license = { text = "MIT" }
+keywords = ["recursion", "algorithms", "learning", "simulation"]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Education",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/eytanohana/Hanoi"
+Repository = "https://github.com/eytanohana/Hanoi"
+Issues = "https://github.com/eytanohana/Hanoi/issues"
+
+
 [tool.uv.build-backend]
 module-name = "hanoi"
 
