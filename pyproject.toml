@@ -13,7 +13,7 @@ dependencies = [
 authors = [
     { name = "Eytan Ohana" }
 ]
-license = { text = "MIT" }
+
 keywords = ["recursion", "algorithms", "learning", "simulation"]
 classifiers = [
     "Programming Language :: Python",
