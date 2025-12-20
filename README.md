@@ -1,5 +1,11 @@
 # 🗼 Towers of Hanoi
 
+![PyPI - Version](https://img.shields.io/pypi/v/hanoi-viz)
+![PyPI - License](https://img.shields.io/pypi/l/hanoi-viz)
+[![CI status](https://github.com/eytanohana/Hanoi/actions/workflows/ci.yml/badge.svg)](https://github.com/eytanohana/Hanoi/actions/workflows/ci.yml)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hanoi-viz)
+
+
 A small Python project that **visualizes the Towers of Hanoi puzzle**
 using **pygame** for animation and **rich** for colorful CLI output.
 
